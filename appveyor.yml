@@ -1,0 +1,43 @@
+version: 1.0.0+{build}
+
+image:
+  - Ubuntu
+
+configuration: Release
+
+platform: x64
+
+environment:
+  DOCKER_LOGIN: infactum
+  DOCKER_PASSWORD:
+    secure: wWPsUiEtw8rfnjX2/Y3/AA==
+  DOCKER_IMAGE: infactum/tg2sip-builder
+
+  matrix:
+    - TARGET_PLATFORM: x64
+
+init:
+  - sh: |
+      docker login -u $DOCKER_LOGIN -p $DOCKER_PASSWORD
+      docker pull $DOCKER_IMAGE
+install: 
+  - sh: docker build buildenv/ --cache-from $DOCKER_IMAGE -t $DOCKER_IMAGE:latest
+
+build_script: 
+  - sh: >- 
+      docker run --rm -v $(pwd):/src $DOCKER_IMAGE /bin/bash -c "
+        mkdir build && cd build;
+        cmake -DCMAKE_BUILD_TYPE=Release /src;
+        cmake --build .;
+        cp tg2sip /src;
+        cp gen_db /src;"
+      chmod +x tg2sip;
+      chmod +x gen_db;
+      7z a tg2sip.zip tg2sip gen_db settings.ini
+
+after_build:
+  - sh: docker push $DOCKER_IMAGE
+
+artifacts:
+  - path: tg2sip.zip
+    name: TG2SIP Ubuntu Bionic
