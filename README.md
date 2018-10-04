@@ -1,3 +1,5 @@
+[![Build status](https://ci.appveyor.com/api/projects/status/4dnph34apvfy6vft?svg=true)](https://ci.appveyor.com/project/Infactum/tg2sip)
+
 # TG2SIP
 
 TG2SIP is a Telegram<->SIP voice gateway. It can be used to forward incoming telegram calls to your SIP PBX or make SIP->Telegram calls.
@@ -8,7 +10,7 @@ Your SIP PBX should be comaptible with `L16@48000` or `OPUS@48000` voice codec.
 
 ## Usage
 
-1. Download prebuild version from CI or compile it yourself.
+1. [Download](https://ci.appveyor.com/api/projects/Infactum/tg2sip/artifacts/tg2sip.zip?branch=master) prebuild version from CI or compile it yourself.
 2. Obtain `api_id` and `api_hash` tokens from [this](https://my.telegram.org) page and put them in `settings.ini` file.
 3. Login into telegram with `gen_db` app
 4. Set SIP server settings in `settings.ini`

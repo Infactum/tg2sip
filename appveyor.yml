@@ -25,15 +25,16 @@ install:
 
 build_script: 
   - sh: >- 
+      mkdir build;
       docker run --rm -v $(pwd):/src $DOCKER_IMAGE /bin/bash -c "
         mkdir build && cd build;
         cmake -DCMAKE_BUILD_TYPE=Release /src;
         cmake --build .;
-        cp tg2sip /src;
-        cp gen_db /src;"
-      chmod +x tg2sip;
-      chmod +x gen_db;
-      7z a tg2sip.zip tg2sip gen_db settings.ini
+        chmod +x tg2sip;
+        chmod +x gen_db;
+        cp tg2sip /src/build;
+        cp gen_db /src/build;"      
+      7z a tg2sip.zip build/tg2sip build/gen_db settings.ini;
 
 after_build:
   - sh: docker push $DOCKER_IMAGE
