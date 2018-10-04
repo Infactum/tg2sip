@@ -12,6 +12,7 @@
 #include "config.h"
 #endif
 
+#if !defined(TGVOIP_USE_SOFTWARE_AUDIO)
 #if defined(TGVOIP_USE_CALLBACK_AUDIO_IO)
 // nothing
 #elif defined(__ANDROID__)
@@ -39,6 +40,7 @@
 #endif
 #else
 #error "Unsupported operating system"
+#endif
 #endif
 
 using namespace tgvoip;
@@ -71,6 +73,7 @@ int32_t AudioOutput::GetEstimatedDelay(){
 
 
 void AudioOutput::EnumerateDevices(std::vector<AudioOutputDevice>& devs){
+#if !defined(TGVOIP_USE_SOFTWARE_AUDIO)
 #if defined(TGVOIP_USE_CALLBACK_AUDIO_IO)
 	// not supported
 #elif defined(__APPLE__) && TARGET_OS_OSX
@@ -91,6 +94,7 @@ void AudioOutput::EnumerateDevices(std::vector<AudioOutputDevice>& devs){
 	AudioOutputALSA::EnumerateDevices(devs);
 #else
 	AudioOutputPulse::EnumerateDevices(devs)
+#endif
 #endif
 #endif
 }

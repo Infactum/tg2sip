@@ -21,6 +21,11 @@
 #include <unordered_map>
 #include <memory>
 #include <atomic>
+#if defined(TGVOIP_USE_SOFTWARE_AUDIO)
+#include <pjsua2.hpp>
+#include "audio/SoftwareAudioInput.h"
+#include "audio/SoftwareAudioOutput.h"
+#endif
 #include "audio/AudioInput.h"
 #include "BlockingQueue.h"
 #include "audio/AudioOutput.h"
@@ -381,6 +386,11 @@ namespace tgvoip{
 			return 0.0f;
 		};
 
+#if defined(TGVOIP_USE_SOFTWARE_AUDIO)
+        pj::AudioMedia * AudioMediaInput() {return softwareMediaInput;};
+        pj::AudioMedia * AudioMediaOutput() {return softwareMediaOutput;};
+#endif
+
 	private:
 		struct Stream;
 		struct UnacknowledgedExtraData;
@@ -631,6 +641,10 @@ namespace tgvoip{
 		double p2pToRelaySwitchThreshold;
 		double relayToP2pSwitchThreshold;
 		double reconnectingTimeout;
+#if defined(TGVOIP_USE_SOFTWARE_AUDIO)
+        tgvoip::audio::SoftwareAudioInput* softwareMediaInput;
+        tgvoip::audio::SoftwareAudioOutput* softwareMediaOutput;
+#endif
 
 	public:
 #ifdef __APPLE__

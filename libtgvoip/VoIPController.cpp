@@ -123,6 +123,9 @@ CryptoFunctions VoIPController::crypto; // set it yourself upon initialization
 
 
 extern FILE* tgvoipLogFile;
+#ifdef TGVOIP_USE_SPDLOG
+extern std::shared_ptr<spdlog::logger> _voip_logger;
+#endif
 
 VoIPController::VoIPController() : activeNetItfName(""),
 								   currentAudioInput("default"),
@@ -130,7 +133,10 @@ VoIPController::VoIPController() : activeNetItfName(""),
 								   proxyAddress(""),
 								   proxyUsername(""),
 								   proxyPassword(""){
-	seq=1;
+#ifdef TGVOIP_USE_SPDLOG
+    _voip_logger = spdlog::get("tgvoip");
+#endif
+    seq=1;
 	lastRemoteSeq=0;
 	state=STATE_WAIT_INIT;
 	audioInput=NULL;
@@ -245,10 +251,42 @@ VoIPController::VoIPController() : activeNetItfName(""),
 	vstm.codec=CODEC_AVC;
 	vstm.enabled=1;
 	outgoingStreams.push_back(vstm);*/
+
+#if defined(TGVOIP_USE_SOFTWARE_AUDIO)
+	pj_thread_t *tmp_thread = nullptr;
+	pj_thread_desc tmp_thread_desc;
+	if (!pj_thread_is_registered()) {
+		pj_bzero(&tmp_thread_desc, sizeof(tmp_thread_desc));
+		pj_status_t status;
+		status = pj_thread_register("tmp", tmp_thread_desc, &tmp_thread);
+		if (status != PJ_SUCCESS) {
+			LOGE("Temp constructor thread PJ register failed");
+		}
+	}
+
+    softwareMediaInput = new tgvoip::audio::SoftwareAudioInput();
+    softwareMediaOutput = new tgvoip::audio::SoftwareAudioOutput();
+
+    if (tmp_thread) {
+        pj_thread_destroy(tmp_thread);
+    }
+#endif
 }
 
 VoIPController::~VoIPController(){
 	LOGD("Entered VoIPController::~VoIPController");
+#if defined(TGVOIP_USE_SOFTWARE_AUDIO)
+    pj_thread_t *tmp_thread = nullptr;
+    pj_thread_desc tmp_thread_desc;
+    if (!pj_thread_is_registered()) {
+        pj_bzero(&tmp_thread_desc, sizeof(tmp_thread_desc));
+        pj_status_t status;
+        status = pj_thread_register("tmp", tmp_thread_desc, &tmp_thread);
+        if (status != PJ_SUCCESS) {
+            LOGE("Temp destructor thread PJ register failed");
+        }
+    }
+#endif
 	if(!stopping){
 		LOGE("!!!!!!!!!!!!!!!!!!!! CALL controller->Stop() BEFORE DELETING THE CONTROLLER OBJECT !!!!!!!!!!!!!!!!!!!!!!!1");
 		abort();
@@ -289,6 +327,14 @@ VoIPController::~VoIPController(){
 			delete (*stm)->decoder;
 		}
 	}*/
+#if defined(TGVOIP_USE_SOFTWARE_AUDIO)
+    delete softwareMediaInput;
+    delete softwareMediaOutput;
+
+    if(tmp_thread) {
+        pj_thread_destroy(tmp_thread);
+    }
+#endif
 	LOGD("before delete echo canceller");
 	if(echoCanceller){
 		echoCanceller->Stop();
@@ -1346,45 +1392,45 @@ simpleAudioBlock random_id:long random_bytes:string raw_data:string = DecryptedA
 				peerCapabilities|=TGVOIP_PEER_CAP_GROUP_CALLS;
 			}
 
-			unsigned int i;
-			unsigned int numSupportedAudioCodecs=in.ReadByte();
-			for(i=0; i<numSupportedAudioCodecs; i++){
-				if(peerVersion<5)
-					in.ReadByte(); // ignore for now
-				else
-					in.ReadInt32();
-			}
-			unsigned int numSupportedVideoCodecs=in.ReadByte();
-			for(i=0; i<numSupportedVideoCodecs; i++){
-				if(peerVersion<5)
-					in.ReadByte(); // ignore for now
-				else
-					in.ReadInt32();
-			}
+		unsigned int i;
+		unsigned int numSupportedAudioCodecs=in.ReadByte();
+		for(i=0; i<numSupportedAudioCodecs; i++){
+			if(peerVersion<5)
+				in.ReadByte(); // ignore for now
+			else
+				in.ReadInt32();
+		}
+		unsigned int numSupportedVideoCodecs=in.ReadByte();
+		for(i=0; i<numSupportedVideoCodecs; i++){
+			if(peerVersion<5)
+				in.ReadByte(); // ignore for now
+			else
+				in.ReadInt32();
+		}
 
-			BufferOutputStream out(1024);
+		BufferOutputStream out(1024);
 
-			out.WriteInt32(PROTOCOL_VERSION);
-			out.WriteInt32(MIN_PROTOCOL_VERSION);
+		out.WriteInt32(PROTOCOL_VERSION);
+		out.WriteInt32(MIN_PROTOCOL_VERSION);
 
-			out.WriteByte((unsigned char) outgoingStreams.size());
-			for(vector<shared_ptr<Stream>>::iterator s=outgoingStreams.begin(); s!=outgoingStreams.end(); ++s){
-				out.WriteByte((*s)->id);
-				out.WriteByte((*s)->type);
-				if(peerVersion<5)
-					out.WriteByte((unsigned char) ((*s)->codec==CODEC_OPUS ? CODEC_OPUS_OLD : 0));
-				else
-					out.WriteInt32((*s)->codec);
-				out.WriteInt16((*s)->frameDuration);
-				out.WriteByte((unsigned char) ((*s)->enabled ? 1 : 0));
-			}
-			sendQueue->Put(PendingOutgoingPacket{
-					/*.seq=*/GenerateOutSeq(),
-					/*.type=*/PKT_INIT_ACK,
-					/*.len=*/out.GetLength(),
-					/*.data=*/Buffer(move(out)),
-					/*.endpoint=*/0
-			});
+		out.WriteByte((unsigned char) outgoingStreams.size());
+		for(vector<shared_ptr<Stream>>::iterator s=outgoingStreams.begin(); s!=outgoingStreams.end(); ++s){
+			out.WriteByte((*s)->id);
+			out.WriteByte((*s)->type);
+			if(peerVersion<5)
+				out.WriteByte((unsigned char) ((*s)->codec==CODEC_OPUS ? CODEC_OPUS_OLD : 0));
+			else
+				out.WriteInt32((*s)->codec);
+			out.WriteInt16((*s)->frameDuration);
+			out.WriteByte((unsigned char) ((*s)->enabled ? 1 : 0));
+		}
+		sendQueue->Put(PendingOutgoingPacket{
+				/*.seq=*/GenerateOutSeq(),
+				/*.type=*/PKT_INIT_ACK,
+				/*.len=*/out.GetLength(),
+				/*.data=*/Buffer(move(out)),
+				/*.endpoint=*/0
+		});
 		}
 	}
 	if(type==PKT_INIT_ACK){
@@ -2648,9 +2694,14 @@ void VoIPController::SendUdpPing(shared_ptr<Endpoint> endpoint){
 void VoIPController::StartAudio(){
 	shared_ptr<Stream>& outgoingAudioStream=outgoingStreams[0];
 	LOGI("before create audio io");
+#if defined(TGVOIP_USE_SOFTWARE_AUDIO)
+    audioInput = softwareMediaInput;
+    audioOutput = softwareMediaOutput;
+#else
 	audioIO=audio::AudioIO::Create();
 	audioInput=audioIO->GetInput();
 	audioOutput=audioIO->GetOutput();
+#endif
 	LOGI("AEC: %d NS: %d AGC: %d", config.enableAEC, config.enableNS, config.enableAGC);
 	echoCanceller=new EchoCanceller(config.enableAEC, config.enableNS, config.enableAGC);
 	encoder=new OpusEncoder(audioInput, peerVersion>=6);

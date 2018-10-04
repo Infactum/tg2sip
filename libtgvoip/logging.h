@@ -13,10 +13,18 @@
 #include <TargetConditionals.h>
 #endif
 
+#ifdef TGVOIP_USE_SPDLOG
+#include "spdlog/spdlog.h"
+#endif
+
 #include <stdio.h>
 
 void tgvoip_log_file_printf(char level, const char* msg, ...);
 void tgvoip_log_file_write_header(FILE* file);
+
+#ifdef TGVOIP_USE_SPDLOG
+void tgvoip_log_spdlog(char level, const char* msg, ...);
+#endif
 
 #if defined(__ANDROID__)
 
@@ -58,7 +66,11 @@ void tgvoip_log_file_write_header(FILE* file);
 
 #include <stdio.h>
 
+#ifdef TGVOIP_USE_SPDLOG
+#define _TGVOIP_LOG_PRINT(verb, msg, ...) {tgvoip_log_spdlog(verb, msg, ##__VA_ARGS__);}
+#else
 #define _TGVOIP_LOG_PRINT(verb, msg, ...) {printf("%c/tgvoip: " msg "\n", verb, ##__VA_ARGS__); tgvoip_log_file_printf(verb, msg, ##__VA_ARGS__);}
+#endif
 
 #define LOGV(msg, ...) _TGVOIP_LOG_PRINT('V', msg, ##__VA_ARGS__)
 #define LOGD(msg, ...) _TGVOIP_LOG_PRINT('D', msg, ##__VA_ARGS__)

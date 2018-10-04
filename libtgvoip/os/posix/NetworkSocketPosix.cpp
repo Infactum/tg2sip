@@ -26,6 +26,11 @@ extern jclass jniUtilitiesClass;
 #include <ifaddrs.h>
 #endif
 
+// fix of undef in pjsip
+#if defined(TGVOIP_USE_SOFTWARE_AUDIO)
+#define s6_addr			__in6_u.__u6_addr8
+#endif
+
 using namespace tgvoip;
 
 

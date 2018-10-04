@@ -12,6 +12,7 @@
 #include "config.h"
 #endif
 
+#if !defined(TGVOIP_USE_SOFTWARE_AUDIO)
 #if defined(TGVOIP_USE_CALLBACK_AUDIO_IO)
 #include "AudioIOCallback.h"
 #elif defined(__ANDROID__)
@@ -42,12 +43,14 @@
 #else
 #error "Unsupported operating system"
 #endif
+#endif
 
 using namespace tgvoip;
 using namespace tgvoip::audio;
 using namespace std;
 
 shared_ptr<AudioIO> AudioIO::Create(){
+#if !defined(TGVOIP_USE_SOFTWARE_AUDIO)
 	std::string inputDevice="default", outputDevice="default";
 #if defined(TGVOIP_USE_CALLBACK_AUDIO_IO)
 	return std::make_shared<AudioIOCallback>();
@@ -79,6 +82,7 @@ shared_ptr<AudioIO> AudioIO::Create(){
 	return std::make_shared<ContextlessAudioIO<AudioInputALSA, AudioOutputALSA>>(inputDevice, outputDevice);
 #else
 	return std::make_shared<AudioPulse>(inputDevice, outputDevice);
+#endif
 #endif
 #endif
 }

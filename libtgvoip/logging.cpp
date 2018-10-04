@@ -22,7 +22,48 @@
 #include "os/darwin/DarwinSpecific.h"
 #endif
 
+#ifdef TGVOIP_USE_SPDLOG
+#include <memory>
+#include "spdlog/spdlog.h"
+#endif
+
 FILE* tgvoipLogFile=NULL;
+#ifdef TGVOIP_USE_SPDLOG
+std::shared_ptr<spdlog::logger> _voip_logger;
+
+void tgvoip_log_spdlog(char level, const char* msg, ...) {
+    if (_voip_logger) {
+        spdlog::level::level_enum lvl;
+        switch (level) {
+            case 'V':
+                lvl = spdlog::level::level_enum::trace;
+                break;
+            case 'D':
+                lvl = spdlog::level::level_enum::debug;
+                break;
+            case 'I':
+                lvl = spdlog::level::level_enum::info;
+                break;
+            case 'W':
+                lvl = spdlog::level::level_enum::warn;
+                break;
+            case 'E':
+                lvl = spdlog::level::level_enum::err;
+                break;
+            default:
+                return;
+        }
+
+        va_list argptr;
+        va_start(argptr, msg);
+
+        char buf[1024];
+        vsprintf(buf, msg, argptr);
+		_voip_logger->log(lvl, buf);
+    }
+}
+
+#endif
 
 void tgvoip_log_file_printf(char level, const char* msg, ...){
 	if(tgvoipLogFile){
