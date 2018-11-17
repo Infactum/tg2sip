@@ -25,11 +25,12 @@ environment:
       docker_tag: centos7
 
 init:
+  - sh: docker login -u "$docker_login" -p "$docker_password"
+
+install:
   - sh: |
-      docker login -u "$docker_login" -p "$docker_password"
       docker ps
-      docker pull "$docker_image":"$docker_tag"
-install: 
+      docker pull "$docker_image":"$docker_tag" 
   - sh: docker build buildenv/ -f Dockerfile."$docker_tag" --cache-from "$docker_image":"$docker_tag" -t "$docker_image":"$docker_tag"
 
 build_script: 
