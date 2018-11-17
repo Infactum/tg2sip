@@ -3,6 +3,9 @@ version: 1.0.0+{build}
 image:
   - Ubuntu
 
+services:
+- docker
+
 configuration: Release
 
 platform: x64
