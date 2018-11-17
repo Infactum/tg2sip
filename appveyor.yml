@@ -1,7 +1,7 @@
 version: 1.0.0+{build}
 
 image:
-  - Ubuntu1804
+  - Previous Ubuntu
 
 services:
   - docker
@@ -25,12 +25,12 @@ environment:
       docker_tag: centos7
 
 init:
-  - sh: docker login -u "$docker_login" -p "$docker_password"
+  - sh: |
+    docker login -u "$docker_login" -p "$docker_password"
+    docker ps
+    docker pull "$docker_image":"$docker_tag" 
 
 install:
-  - sh: |
-      docker ps
-      docker pull "$docker_image":"$docker_tag" 
   - sh: docker build buildenv/ -f Dockerfile."$docker_tag" --cache-from "$docker_image":"$docker_tag" -t "$docker_image":"$docker_tag"
 
 build_script: 
