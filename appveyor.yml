@@ -1,7 +1,7 @@
 version: 1.0.0+{build}
 
 image:
-  - Previous Ubuntu
+  - Ubuntu
 
 services:
   - docker
@@ -26,12 +26,9 @@ environment:
 
 init:
   - sh: |
+      service docker status
       docker login -u "$docker_login" -p "$docker_password"
-      service docker status
-      service docker start
-      service docker status
-      docker ps
-      docker pull "$docker_image":"$docker_tag" 
+      # docker pull "$docker_image":"$docker_tag" 
 
 install:
   - sh: docker build buildenv/ -f Dockerfile."$docker_tag" --cache-from "$docker_image":"$docker_tag" -t "$docker_image":"$docker_tag"
