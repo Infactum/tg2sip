@@ -51,3 +51,7 @@ build_script:
 after_build:
   - sh: docker push "$docker_image":"$docker_tag"
   - sh: appveyor PushArtifact tg2sip_"$docker_tag".zip -FileName TG2SIP "$target_name"
+
+on_finish:
+  - sh: export APPVEYOR_SSH_BLOCK=true
+  - sh: curl -sflL 'https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-ssh.sh' | bash -e -
