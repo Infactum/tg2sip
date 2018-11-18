@@ -26,7 +26,7 @@ environment:
 
 init:
   - sh: |
-      service docker status
+      service docker start
       docker login -u "$docker_login" -p "$docker_password"
       # docker pull "$docker_image":"$docker_tag" 
 
