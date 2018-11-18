@@ -12,6 +12,7 @@ platform: x64
 
 environment:
   global:
+    APPVEYOR_SSH_KEY: ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCpMyKAmM84H5d7N0oS4VLG4hPEWF/BbQCcX1XygA1gMbQzzI7KAQWKpuT348vMyX6+E37GJCGT29BqKbv3nMvFOjIsyIAWYUBNz9rYgZl1Ju6DSvzyRl3KHNTAAT4sDHud7REgVUkD0ExAUOhpbV4V+h11cMiurb9b61kzlnJE+c10qGpG1LfEXyGt8hlt0IMndFU6JB71hir2jkKRjV0urRrVxlDfz+XbMYpQ5ZVb12dfGQT1qKDuz/9VIPfXXmC+YrLTE7UJDxD1Qk5d77HHGWmNS/+abqZZ0b++ZzS+LuOhq9HYEQn38SeP1PIeP65mfUX3GeilaRSDbhgW3pK5 appveyor
     docker_login: infactum
     docker_password:
       secure: wWPsUiEtw8rfnjX2/Y3/AA==
