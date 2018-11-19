@@ -27,9 +27,9 @@ environment:
 
 init:
   - sh: |
-      service docker status
-      service docker start
-      service docker status
+      # service docker status
+      # service docker start
+      # service docker status
       docker login -u "$docker_login" -p "$docker_password"
       # docker pull "$docker_image":"$docker_tag" 
 
@@ -53,6 +53,6 @@ after_build:
   - sh: docker push "$docker_image":"$docker_tag"
   - sh: appveyor PushArtifact tg2sip_"$docker_tag".zip -FileName TG2SIP "$target_name"
 
-on_finish:
-  - sh: export APPVEYOR_SSH_BLOCK=true
-  - sh: curl -sflL 'https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-ssh.sh' | bash -e -
+# on_finish:
+#   - sh: export APPVEYOR_SSH_BLOCK=true
+#   - sh: curl -sflL 'https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-ssh.sh' | bash -e -
