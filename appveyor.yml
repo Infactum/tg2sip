@@ -43,8 +43,8 @@ build_script:
         chmod +x gen_db;
         cp tg2sip /src/build;
         cp gen_db /src/build;"      
-      7z a tg2sip_"$docker_tag".zip ./build/tg2sip ./build/gen_db ./settings.ini;
+      7z a tg2sip.zip ./build/tg2sip ./build/gen_db ./settings.ini;
 
 after_build:
   - sh: docker push "$docker_image":"$docker_tag"
-  - sh: appveyor PushArtifact tg2sip_"$docker_tag".zip -FileName TG2SIP "$target_name"
+  - sh: appveyor PushArtifact tg2sip.zip -FileName tg2sip_"$docker_tag".zip -DeploymentName TG2SIP "$target_name"
