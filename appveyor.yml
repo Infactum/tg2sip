@@ -47,4 +47,4 @@ build_script:
 
 after_build:
   - sh: docker push "$docker_image":"$docker_tag"
-  - sh: appveyor PushArtifact tg2sip.zip -FileName tg2sip_"$docker_tag".zip -DeploymentName TG2SIP "$target_name"
+  - sh: appveyor PushArtifact tg2sip.zip -FileName tg2sip_"$docker_tag".zip -DeploymentName "TG2SIP $target_name"
