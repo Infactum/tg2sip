@@ -1,32 +1,41 @@
 version: 1.0.0+{build}
 
 image:
-  - Ubuntu
+  - Previous Ubuntu
+
+services:
+  - docker
 
 configuration: Release
 
 platform: x64
 
 environment:
-  DOCKER_LOGIN: infactum
-  DOCKER_PASSWORD:
-    secure: wWPsUiEtw8rfnjX2/Y3/AA==
-  DOCKER_IMAGE: infactum/tg2sip-builder
+  global:
+    docker_login: infactum
+    docker_password:
+      secure: wWPsUiEtw8rfnjX2/Y3/AA==
+    docker_image: infactum/tg2sip-builder
 
   matrix:
-    - TARGET_PLATFORM: x64
+    - target_name: Ubuntu Bionic
+      docker_tag: bionic
+
+    - target_name: CentOS 7
+      docker_tag: centos7
 
 init:
   - sh: |
-      docker login -u $DOCKER_LOGIN -p $DOCKER_PASSWORD
-      docker pull $DOCKER_IMAGE
-install: 
-  - sh: docker build buildenv/ --cache-from $DOCKER_IMAGE -t $DOCKER_IMAGE:latest
+      docker login -u "$docker_login" -p "$docker_password"
+      docker pull "$docker_image":"$docker_tag" 
+
+install:
+  - sh: docker build buildenv/ -f buildenv/Dockerfile."$docker_tag" --cache-from "$docker_image":"$docker_tag" -t "$docker_image":"$docker_tag"
 
 build_script: 
   - sh: >- 
       mkdir build;
-      docker run --rm -v $(pwd):/src $DOCKER_IMAGE /bin/bash -c "
+      docker run --rm -v "$(pwd)":/src "$docker_image" /bin/bash -c "
         mkdir build && cd build;
         cmake -DCMAKE_BUILD_TYPE=Release /src;
         cmake --build .;
@@ -37,8 +46,5 @@ build_script:
       7z a tg2sip.zip ./build/tg2sip ./build/gen_db ./settings.ini;
 
 after_build:
-  - sh: docker push $DOCKER_IMAGE
-
-artifacts:
-  - path: tg2sip.zip
-    name: TG2SIP Ubuntu Bionic
+  - sh: docker push "$docker_image":"$docker_tag"
+  - sh: appveyor PushArtifact tg2sip.zip -FileName tg2sip_"$docker_tag".zip -DeploymentName "TG2SIP $target_name"
