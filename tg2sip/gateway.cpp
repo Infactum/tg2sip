@@ -22,7 +22,6 @@ namespace sml = boost::sml;
 namespace td_api = td::td_api;
 
 #define CALL_PROTO_MIN_LAYER 65
-#define CALL_PROTO_MAX_LAYER 74
 
 namespace state_machine::guards {
     bool IsIncoming::operator()(const td::td_api::object_ptr<td::td_api::updateCall> &event) const {
@@ -212,7 +211,8 @@ namespace state_machine::actions {
                 ctx.tg_call_id,
                 td_api::make_object<td_api::callProtocol>(settings.udp_p2p(),
                                                           settings.udp_reflector(),
-                                                          CALL_PROTO_MIN_LAYER, CALL_PROTO_MAX_LAYER)
+                                                          CALL_PROTO_MIN_LAYER,
+                                                          tgvoip::VoIPController::GetConnectionMaxLayer())
         )).get();
 
         if (response->get_id() == td_api::error::ID) {
@@ -347,10 +347,10 @@ namespace state_machine::actions {
                                             static_cast<uint16_t>(connection->port_),
                                             ipv4,
                                             ipv6,
-                                            Endpoint::TYPE_UDP_RELAY,
+                                            Endpoint::UDP_RELAY,
                                             peer_tag));
         }
-        voip_controller->SetRemoteEndpoints(endpoints, settings.udp_p2p(), CALL_PROTO_MAX_LAYER);
+        voip_controller->SetRemoteEndpoints(endpoints, settings.udp_p2p(), VoIPController::GetConnectionMaxLayer());
         voip_controller->Start();
         voip_controller->Connect();
 
@@ -424,7 +424,8 @@ namespace state_machine::actions {
         auto response = tg_client_->send_query_async(td_api::make_object<td_api::createCall>(
                 id /* id */,
                 td_api::make_object<td_api::callProtocol>(settings_->udp_p2p(), settings_->udp_reflector(),
-                                                          CALL_PROTO_MIN_LAYER, CALL_PROTO_MAX_LAYER))
+                                                          CALL_PROTO_MIN_LAYER,
+                                                          tgvoip::VoIPController::GetConnectionMaxLayer()))
         ).get();
 
         if (response->get_id() == td_api::error::ID) {
