@@ -43,6 +43,7 @@ target_include_directories(tg2sip PRIVATE
 
 target_link_libraries(tg2sip PRIVATE
         ${PJSIP_LIBRARIES}
+        ${OPUS_LIBRARIES}
         libtgvoip
         Threads::Threads
         Td::TdStatic)
