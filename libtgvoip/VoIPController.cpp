@@ -1489,6 +1489,7 @@ void VoIPController::InitUDPProxy(){
 	string proxyHostPort(sbuf);
 	if(proxyHostPort==lastTestedProxyServer && !proxySupportsUDP){
 		LOGI("Proxy does not support UDP - using UDP directly instead");
+		ResetUdpAvailability();
 		return;
 	}
 
@@ -3366,6 +3367,7 @@ void VoIPController::SetupOutgoingVideoStream(){
 #pragma mark - Timer methods
 
 void VoIPController::SendUdpPings(){
+	LOGW("Send udp pings");
 	MutexGuard m(endpointsMutex);
 	for(pair<const int64_t, Endpoint>& e:endpoints){
 		if(e.second.type==Endpoint::Type::UDP_RELAY){
