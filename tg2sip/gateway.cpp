@@ -23,6 +23,8 @@ namespace td_api = td::td_api;
 
 #define CALL_PROTO_MIN_LAYER 65
 
+volatile sig_atomic_t e_flag = 0;
+
 namespace state_machine::guards {
     bool IsIncoming::operator()(const td::td_api::object_ptr<td::td_api::updateCall> &event) const {
         return !event->call_->is_outgoing_;
@@ -709,9 +711,12 @@ Gateway::Gateway(sip::Client &sip_client_, tg::Client &tg_client_,
         : sip_client_(sip_client_), tg_client_(tg_client_), logger_(std::move(logger_)),
           sip_events_(sip_events_), tg_events_(tg_events_), settings_(settings) {}
 
-void Gateway::start(volatile sig_atomic_t e_flag) {
+void Gateway::start() {
 
     load_cache();
+
+    signal(SIGINT, [](int) { e_flag = 1; });
+    signal(SIGTERM, [](int) { e_flag = 1; });
 
     while (!e_flag) {
         auto tick_start = std::chrono::steady_clock::now();
