@@ -664,7 +664,9 @@ target_compile_definitions(libtgvoip PRIVATE
         DEFAULT_THREAD_PRIORITY)
 
 target_compile_definitions(libtgvoip PUBLIC
-        TGVOIP_NO_DSP
+        # Chose one of NO_DSP / DESKTOP_DSP
+        # TGVOIP_NO_DSP
+        TGVOIP_USE_DESKTOP_DSP
         TGVOIP_USE_SOFTWARE_AUDIO)
 
 if (${spdlog_FOUND})
