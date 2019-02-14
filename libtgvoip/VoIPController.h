@@ -110,7 +110,7 @@ namespace tgvoip{
 		void (*aes_cbc_encrypt)(uint8_t* in, uint8_t* out, size_t length, uint8_t* key, uint8_t* iv);
 		void (*aes_cbc_decrypt)(uint8_t* in, uint8_t* out, size_t length, uint8_t* key, uint8_t* iv);
 	};
-
+	
 	struct CellularCarrierInfo{
 		std::string name;
 		std::string mcc;
@@ -163,9 +163,9 @@ namespace tgvoip{
 	};
 
 	class AudioInputDevice : public AudioDevice{
-
+	
 	};
-
+	
 	class AudioInputTester{
 	public:
 		AudioInputTester(const std::string deviceID);
@@ -425,7 +425,7 @@ namespace tgvoip{
 		};
 		void SetVideoSource(video::VideoSource* source);
 		void SetVideoRenderer(video::VideoRenderer* renderer);
-
+		
 		void SetInputVolume(float level);
 		void SetOutputVolume(float level);
 #if defined(__APPLE__) && defined(TARGET_OS_OSX)
@@ -752,7 +752,7 @@ namespace tgvoip{
 #if defined(__APPLE__) && defined(TARGET_OS_OSX)
 		bool macAudioDuckingEnabled=true;
 #endif
-
+		
 		video::VideoSource* videoSource=NULL;
 		video::VideoRenderer* videoRenderer=NULL;
 		double firstVideoFrameTime=0.0;
@@ -761,6 +761,12 @@ namespace tgvoip{
 		std::vector<SentVideoFrame> sentVideoFrames;
 		Mutex sentVideoFramesMutex;
 		bool videoKeyframeRequested=false;
+
+		/*** debug report problems ***/
+		bool wasReconnecting=false;
+		bool wasExtraEC=false;
+		bool wasEncoderLaggy=false;
+		bool wasNetworkHandover=false;
 
 		/*** persistable state values ***/
 		bool proxySupportsUDP=true;

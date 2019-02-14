@@ -16,6 +16,7 @@
 #include "VoIPServerConfig.h"
 #include <string.h>
 #include <stdio.h>
+#include <math.h>
 
 using namespace tgvoip;
 
@@ -145,7 +146,6 @@ void EchoCanceller::Enable(bool enabled){
 
 void EchoCanceller::ProcessInput(int16_t* inOut, size_t numSamples, bool& hasVoice){
 #ifndef TGVOIP_NO_DSP
-	}
 	if(!isOn || (!enableAEC && !enableAGC && !enableNS)){
 		return;
 	}
