@@ -1,7 +1,7 @@
 version: 1.0.0+{build}
 
 image:
-  - Previous Ubuntu
+  - Ubuntu
 
 services:
   - docker
@@ -27,7 +27,7 @@ environment:
 init:
   - sh: |
       docker login -u "$docker_login" -p "$docker_password"
-      docker pull "$docker_image":"$docker_tag" 
+      docker pull "$docker_image":"$docker_tag"
 
 install:
   - sh: docker build buildenv/ -f buildenv/Dockerfile."$docker_tag" --cache-from "$docker_image":"$docker_tag" -t "$docker_image":"$docker_tag"
@@ -35,9 +35,9 @@ install:
 build_script: 
   - sh: >- 
       mkdir build;
-      docker run --rm -v "$(pwd)":/src "$docker_image" /bin/bash -c "
+      docker run --rm -v "$(pwd)":/src "$docker_image":"$docker_tag" /bin/bash -c "
         mkdir build && cd build;
-        cmake -DCMAKE_BUILD_TYPE=Release /src;
+        export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig && cmake -DCMAKE_BUILD_TYPE=Release /src
         cmake --build .;
         chmod +x tg2sip;
         chmod +x gen_db;

@@ -270,7 +270,7 @@ public:
 
     Gateway &operator=(const Gateway &) = delete;
 
-    void start(volatile sig_atomic_t e_flag);
+    void start();
 
 private:
     std::shared_ptr<spdlog::logger> logger_;

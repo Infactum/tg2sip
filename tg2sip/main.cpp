@@ -26,8 +26,6 @@
 #include "sip.h"
 #include "gateway.h"
 
-volatile sig_atomic_t e_flag = 0;
-
 int main() {
     pthread_setname_np(pthread_self(), "main");
 
@@ -80,10 +78,7 @@ int main() {
 
     auto gateway = std::make_unique<Gateway>(*sip_client, *tg_client, sip_events, tg_events, logger, settings);
 
-    signal(SIGINT, [](int) { e_flag = 1; });
-    signal(SIGTERM, [](int) { e_flag = 1; });
-
-    gateway->start(e_flag);
+    gateway->start();
 
     logger->info("performing a graceful shutdown...");
     spdlog::drop_all();

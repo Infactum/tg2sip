@@ -51,3 +51,7 @@ RUN source /opt/rh/devtoolset-7/enable \
     && cmake --build . --target install \
     && cd / \
     && rm -rf spdlog
+
+COPY centos_entrypoint.sh /
+
+ENTRYPOINT ["/centos_entrypoint.sh"]

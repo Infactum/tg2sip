@@ -22,7 +22,8 @@ namespace sml = boost::sml;
 namespace td_api = td::td_api;
 
 #define CALL_PROTO_MIN_LAYER 65
-#define CALL_PROTO_MAX_LAYER 74
+
+volatile sig_atomic_t e_flag = 0;
 
 namespace state_machine::guards {
     bool IsIncoming::operator()(const td::td_api::object_ptr<td::td_api::updateCall> &event) const {
@@ -212,7 +213,8 @@ namespace state_machine::actions {
                 ctx.tg_call_id,
                 td_api::make_object<td_api::callProtocol>(settings.udp_p2p(),
                                                           settings.udp_reflector(),
-                                                          CALL_PROTO_MIN_LAYER, CALL_PROTO_MAX_LAYER)
+                                                          CALL_PROTO_MIN_LAYER,
+                                                          tgvoip::VoIPController::GetConnectionMaxLayer())
         )).get();
 
         if (response->get_id() == td_api::error::ID) {
@@ -347,10 +349,10 @@ namespace state_machine::actions {
                                             static_cast<uint16_t>(connection->port_),
                                             ipv4,
                                             ipv6,
-                                            Endpoint::TYPE_UDP_RELAY,
+                                            Endpoint::UDP_RELAY,
                                             peer_tag));
         }
-        voip_controller->SetRemoteEndpoints(endpoints, settings.udp_p2p(), CALL_PROTO_MAX_LAYER);
+        voip_controller->SetRemoteEndpoints(endpoints, settings.udp_p2p(), VoIPController::GetConnectionMaxLayer());
         voip_controller->Start();
         voip_controller->Connect();
 
@@ -424,7 +426,8 @@ namespace state_machine::actions {
         auto response = tg_client_->send_query_async(td_api::make_object<td_api::createCall>(
                 id /* id */,
                 td_api::make_object<td_api::callProtocol>(settings_->udp_p2p(), settings_->udp_reflector(),
-                                                          CALL_PROTO_MIN_LAYER, CALL_PROTO_MAX_LAYER))
+                                                          CALL_PROTO_MIN_LAYER,
+                                                          tgvoip::VoIPController::GetConnectionMaxLayer()))
         ).get();
 
         if (response->get_id() == td_api::error::ID) {
@@ -708,9 +711,12 @@ Gateway::Gateway(sip::Client &sip_client_, tg::Client &tg_client_,
         : sip_client_(sip_client_), tg_client_(tg_client_), logger_(std::move(logger_)),
           sip_events_(sip_events_), tg_events_(tg_events_), settings_(settings) {}
 
-void Gateway::start(volatile sig_atomic_t e_flag) {
+void Gateway::start() {
 
     load_cache();
+
+    signal(SIGINT, [](int) { e_flag = 1; });
+    signal(SIGTERM, [](int) { e_flag = 1; });
 
     while (!e_flag) {
         auto tick_start = std::chrono::steady_clock::now();

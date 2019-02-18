@@ -18,6 +18,14 @@ namespace libtgvoip{
 		property Platform::Array<uint8>^ peerTag;
 	};
 
+	public ref class TrafficStats sealed{
+	public:
+		property uint64_t bytesSentWifi;
+		property uint64_t bytesRecvdWifi;
+		property uint64_t bytesSentMobile;
+		property uint64_t bytesRecvdMobile;
+	};
+
 	public enum class CallState : int{
 		WaitInit=1,
 		WaitInitAck,
@@ -70,12 +78,15 @@ namespace libtgvoip{
 		virtual ~VoIPControllerWrapper();
 		void Start();
 		void Connect();
-		void SetPublicEndpoints(const Platform::Array<Endpoint^>^ endpoints, bool allowP2P);
+		void SetPublicEndpoints(const Platform::Array<Endpoint^>^ endpoints, bool allowP2P, int32_t connectionMaxLayer);
 		void SetNetworkType(NetworkType type);
 		void SetMicMute(bool mute);
 		void SetEncryptionKey(const Platform::Array<uint8>^ key, bool isOutgoing);
 		void SetConfig(double initTimeout, double recvTimeout, DataSavingMode dataSavingMode, bool enableAEC, bool enableNS, bool enableAGC, Platform::String^ logFilePath, Platform::String^ statsDumpFilePath);
 		void SetProxy(ProxyProtocol protocol, Platform::String^ address, uint16_t port, Platform::String^ username, Platform::String^ password);
+		int GetSignalBarsCount();
+		CallState GetConnectionState();
+		TrafficStats^ GetStats();
 		Platform::String^ GetDebugString();
 		Platform::String^ GetDebugLog();
 		Error GetLastError();
