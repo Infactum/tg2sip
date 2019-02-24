@@ -72,6 +72,7 @@ build_script:
       ./linuxdeploy.AppImage --appdir ./build/gen_db -d ./buildenv/app.desktop -i ./buildenv/icon.svg;
       ./appimagetool.AppImage tg2sip;
       ./appimagetool.AppImage gen_db;
+      ls -l;
       7z a tg2sip.zip ./build/tg2sip-x86_64.AppImage ./build/gen_db-x86_64.AppImage ./settings.ini;
       fi;
 
