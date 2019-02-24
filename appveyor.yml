@@ -69,7 +69,7 @@ build_script:
       chmod +x appimagetool.AppImage;
       wget https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage -O linuxdeploy.AppImage;
       chmod +x linuxdeploy.AppImage;
-      sudo chown -R "$(id -u)":"$(id -g)";
+      sudo chown -R "$(id -u)":"$(id -g)" ./build;
       ./linuxdeploy.AppImage --appdir ./build/tg2sip -d ./buildenv/app.desktop -i ./buildenv/icon.svg;
       ./linuxdeploy.AppImage --appdir ./build/gen_db -d ./buildenv/app.desktop -i ./buildenv/icon.svg;
       ./appimagetool.AppImage tg2sip;
