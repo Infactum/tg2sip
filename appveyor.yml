@@ -24,6 +24,9 @@ environment:
     - target_name: CentOS 7
       docker_tag: centos7
 
+    - target_name: AppImage
+      docker_tag: centos6
+
 init:
   - sh: |
       docker login -u "$docker_login" -p "$docker_password"
@@ -34,6 +37,7 @@ install:
 
 build_script: 
   - sh: >- 
+      if [ "$target_name" = "AppImage" ] ; then exit 0; fi ;
       mkdir build;
       docker run --rm -v "$(pwd)":/src "$docker_image":"$docker_tag" /bin/bash -c "
         mkdir build && cd build;
@@ -42,9 +46,35 @@ build_script:
         chmod +x tg2sip;
         chmod +x gen_db;
         cp tg2sip /src/build;
-        cp gen_db /src/build;"      
+        cp gen_db /src/build;"
       7z a tg2sip.zip ./build/tg2sip ./build/gen_db ./settings.ini;
+
+  - sh: >- 
+      if [ "$target_name" != "AppImage" ] ; then exit 0; fi ;
+      mkdir build;
+      docker run --rm -v "$(pwd)":/src "$docker_image":"$docker_tag" /bin/bash -c "
+        mkdir build && cd build;
+        export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig && cmake -DCMAKE_BUILD_TYPE=Release /src;
+        cmake --build .;
+        chmod +x tg2sip;
+        chmod +x gen_db;
+        linuxdeploy --appdir /src/build/tg2sip -e tg2sip;
+        linuxdeploy --appdir /src/build/tg2sip -e gen_db;"
+      wget https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage -O appimagetool.AppImage;
+      chmod +x appimagetool.AppImage;
+      wget https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage -O chmod +x linuxdeploy.AppImage;
+      chmod +x linuxdeploy.AppImage;
+      ./linuxdeploy.AppImage --appdir ./build/tg2sip -d ./buildenv/app.desktop -i ./buildenv/icon.svg;
+      ./linuxdeploy.AppImage --appdir ./build/gen_db -d ./buildenv/app.desktop -i ./buildenv/icon.svg;
+      ./appimagetool.AppImage tg2sip;
+      ./appimagetool.AppImage gen_db;
+      7z a tg2sip.zip ./build/tg2sip-x86_64.AppImage ./build/gen_db-x86_64.AppImage ./settings.ini;
 
 after_build:
   - sh: docker push "$docker_image":"$docker_tag"
-  - sh: appveyor PushArtifact tg2sip.zip -FileName tg2sip_"$docker_tag".zip -DeploymentName "TG2SIP $target_name"
+  - sh: >-
+      if [ "$target_name" != "AppImage" ] ; then
+        appveyor PushArtifact tg2sip.zip -FileName tg2sip_"$docker_tag".zip -DeploymentName "TG2SIP $target_name"
+      else
+        appveyor PushArtifact tg2sip.zip -FileName tg2sip.zip -DeploymentName "TG2SIP AppImage"
+      fi
