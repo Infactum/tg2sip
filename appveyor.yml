@@ -18,11 +18,11 @@ environment:
     docker_image: infactum/tg2sip-builder
 
   matrix:
-    # - target_name: Ubuntu Bionic
-    #   docker_tag: bionic
+    - target_name: Ubuntu Bionic
+      docker_tag: bionic
 
-    # - target_name: CentOS 7
-    #   docker_tag: centos7
+    - target_name: CentOS 7
+      docker_tag: centos7
 
     - target_name: AppImage
       docker_tag: centos6
