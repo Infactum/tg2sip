@@ -657,6 +657,7 @@ target_include_directories(libtgvoip PRIVATE
         ${PJSIP_INCLUDE_DIRS})
 
 target_compile_definitions(libtgvoip PRIVATE
+        __STDC_FORMAT_MACROS
         WEBRTC_APM_DEBUG_DUMP=0
         WEBRTC_POSIX
         WEBRTC_LINUX

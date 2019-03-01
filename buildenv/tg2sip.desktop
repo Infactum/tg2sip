@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=tg2sip
+Exec=tg2sip
+Comment=TG2SIP Voice Gateway
+Terminal=true
+Type=Application
+Icon=icon
+Categories=AudioVideo;

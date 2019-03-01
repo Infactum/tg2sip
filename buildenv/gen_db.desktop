@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=gen_db
+Exec=gen_db
+Comment=TG2SIP DB generator
+Terminal=true
+Type=Application
+Icon=icon
+Categories=AudioVideo;
