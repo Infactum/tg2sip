@@ -63,7 +63,7 @@ build_script:
         chmod +x tg2sip;
         chmod +x gen_db;
         linuxdeploy --appdir /src/build/tg2sip -e tg2sip;
-        linuxdeploy --appdir /src/build/tg2sip -e gen_db;"
+        linuxdeploy --appdir /src/build/gen_db -e gen_db;"
       wget https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage -O appimagetool.AppImage;
       chmod +x appimagetool.AppImage;
       wget https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage -O linuxdeploy.AppImage;
