@@ -71,8 +71,8 @@ build_script:
       sudo chown -R "$(id -u)":"$(id -g)" ./build;
       ./linuxdeploy.AppImage --appdir ./build/tg2sip -d ./buildenv/tg2sip.desktop -i ./buildenv/icon.svg;
       ./linuxdeploy.AppImage --appdir ./build/gen_db -d ./buildenv/gen_db.desktop -i ./buildenv/icon.svg;
-      ./appimagetool.AppImage tg2sip;
-      ./appimagetool.AppImage gen_db;
+      ./appimagetool.AppImage ./build/tg2sip;
+      ./appimagetool.AppImage ./build/gen_db;
       ls -l ./build;
       7z a tg2sip.zip ./build/tg2sip-x86_64.AppImage ./build/gen_db-x86_64.AppImage ./settings.ini;
       fi;
