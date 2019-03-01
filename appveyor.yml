@@ -53,7 +53,6 @@ build_script:
       fi;
 
   - sh: >-
-      set -xe; 
       if [ "$target_name" = "AppImage" ] ; then
       mkdir build;
       docker run --rm -v "$(pwd)":/src "$docker_image":"$docker_tag" /bin/bash -c "
@@ -73,9 +72,7 @@ build_script:
       ./linuxdeploy.AppImage --appdir ./build/gen_db -d ./buildenv/gen_db.desktop -i ./buildenv/icon.svg;
       ./appimagetool.AppImage ./build/tg2sip;
       ./appimagetool.AppImage ./build/gen_db;
-      ls -l;
-      ls -l ./build;
-      7z a tg2sip.zip ./build/tg2sip-x86_64.AppImage ./build/gen_db-x86_64.AppImage ./settings.ini;
+      7z a tg2sip.zip ./tg2sip-x86_64.AppImage ./gen_db-x86_64.AppImage ./settings.ini;
       fi;
 
 after_build:
