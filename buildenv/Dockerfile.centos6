@@ -5,14 +5,15 @@ RUN yum -y install centos-release-scl yum-utils \
     && yum-config-manager --enable rhel-server-rhscl-7-rpms \
     && yum install -y devtoolset-7-gcc devtoolset-7-gcc-c++
 
-RUN yum install -y \
+RUN set -xe \
+    && yum install -y \
         make \
         git wget \
         zlib-devel openssl-devel gperf \
         pkgconfig ccache gperf unzip \
-        libpng-devel libjpeg-devel patchelf \
+        libpng-devel libjpeg-devel \
         epel-release \
-    && yum install -y opus-devel
+    && yum install -y opus-devel patchelf
 
 RUN wget https://cmake.org/files/v3.9/cmake-3.9.6-Linux-x86_64.sh \
     && sh cmake-3.9.6-Linux-x86_64.sh --prefix=/usr --exclude-subdir
