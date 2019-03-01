@@ -52,7 +52,8 @@ build_script:
       7z a tg2sip.zip ./build/tg2sip ./build/gen_db ./settings.ini;
       fi;
 
-  - sh: >- 
+  - sh: >-
+      set -xe; 
       if [ "$target_name" = "AppImage" ] ; then
       mkdir build;
       docker run --rm -v "$(pwd)":/src "$docker_image":"$docker_tag" /bin/bash -c "
