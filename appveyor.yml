@@ -34,8 +34,6 @@ init:
 
 install:
   - sh: docker build buildenv/ -f buildenv/Dockerfile."$docker_tag" --cache-from "$docker_image":"$docker_tag" -t "$docker_image":"$docker_tag"
-  # temp
-  - sh: docker push "$docker_image":"$docker_tag"
 
 build_script: 
   - sh: >- 
