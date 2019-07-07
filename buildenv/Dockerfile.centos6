@@ -37,8 +37,9 @@ RUN source /opt/rh/devtoolset-7/enable \
 COPY config_site.h /
 
 RUN source /opt/rh/devtoolset-7/enable \
-    && git clone https://github.com/Infactum/pjproject.git \
+    && git clone https://github.com/pjsip/pjproject.git \
     && cd pjproject \
+    && git reset --hard 2.9 \
     && cp /config_site.h pjlib/include/pj \
     && ./configure --disable-sound CFLAGS="-O3 -DNDEBUG" \
     && make dep && make && make install \
