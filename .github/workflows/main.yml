@@ -85,7 +85,7 @@ jobs:
     name: Draft Release
     needs: [build, appimage]
     runs-on: ubuntu-latest
-    if: github.event_name == "push"
+    if: github.event_name == 'push'
     #    && github.ref == master
     steps:
       - uses: release-drafter/release-drafter@v5
