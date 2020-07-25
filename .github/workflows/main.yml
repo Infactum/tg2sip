@@ -54,6 +54,11 @@ jobs:
       
     - uses: actions/download-artifact@v2
       with:
+        name: tg2sip_centos7
+        path: build
+      
+    - uses: actions/download-artifact@v2
+      with:
         name: tmp
         path: tmp
         
