@@ -35,8 +35,9 @@ jobs:
       if: matrix.tag == 'centos7'
       run: |
         mkdir tmp
-        linuxdeploy --appdir tmp -e build/tg2sip
-        linuxdeploy --appdir tmp -e build/gen_db
+        ls -l
+        linuxdeploy --appdir ./tmp -e build/tg2sip
+        linuxdeploy --appdir ./tmp -e build/gen_db
         
     - uses: actions/upload-artifact@v2
       if: matrix.tag == 'centos7'
