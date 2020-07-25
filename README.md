@@ -1,4 +1,4 @@
-![Build status](https://github.com/Infactum/tg2sip/workflows/CI/badge.svg)
+[![Build status](https://github.com/Infactum/tg2sip/workflows/CI/badge.svg)](https://github.com/Infactum/tg2sip/actions)
 
 # TG2SIP
 
