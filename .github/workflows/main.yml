@@ -29,23 +29,17 @@ jobs:
           build/gen_db
           build/settings.ini
     
-    - name: Generate AppImage
+    # AppImage generation cannot be fully done inside container
+    # because of FUSE requirements
+    - name: Prepare AppImage
       if: matrix.tag == 'centos7'
       run: |
-        wget https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage -O appimagetool.AppImage
-        chmod +x appimagetool.AppImage
-        wget https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage -O linuxdeploy.AppImage
-        chmod +x linuxdeploy.AppImage
-        ./linuxdeploy.AppImage --appdir ./build/tg2sip -d ./buildenv/tg2sip.desktop -i ./buildenv/icon.svg
-        ./linuxdeploy.AppImage --appdir ./build/gen_db -d ./buildenv/gen_db.desktop -i ./buildenv/icon.svg
-        ./appimagetool.AppImage ./build/tg2sip
-        ./appimagetool.AppImage ./build/gen_db
+        mkdir tmp
+        linuxdeploy --appdir tmp -e build/tg2sip
+        linuxdeploy --appdir tmp -e build/gen_db
         
     - uses: actions/upload-artifact@v2
       if: matrix.tag == 'centos7'
       with:
-        name: tg2sip_universal
-        path: |
-          tg2sip-x86_64.AppImage
-          gen_db-x86_64.AppImage
-          settings.ini;
+        name: tmp
+        path: tmp
