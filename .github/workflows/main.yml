@@ -7,7 +7,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        tag: [bionic, centos7, centos6]
+        tag: [bionic, centos7]
     container: infactum/tg2sip-builder:${{ matrix.tag }}
       
     steps:
