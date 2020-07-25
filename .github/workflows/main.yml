@@ -25,7 +25,7 @@ jobs:
       with:
         name: tg2sip_${{ matrix.tag }}
         path: |
-          tg2sip
-          gen_db
-          settings.ini
+          build/tg2sip
+          build/gen_db
+          build/settings.ini
     
