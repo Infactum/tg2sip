@@ -70,7 +70,6 @@ jobs:
       run: |
         ./linuxdeploy.AppImage --appdir tmp/tg2sip -d buildenv/tg2sip.desktop -i buildenv/icon.svg
         ./linuxdeploy.AppImage --appdir tmp/gen_db -d buildenv/gen_db.desktop -i buildenv/icon.svg
-        ls -l tmp/gen_db/usr/bin/gen_db
         chmod +x tmp/tg2sip/usr/bin/tg2sip
         chmod +x tmp/gen_db/usr/bin/gen_db
         ./appimagetool.AppImage tmp/tg2sip
