@@ -36,8 +36,8 @@ jobs:
       run: |
         mkdir tmp
         ls -l
-        linuxdeploy --appdir ./tmp -e build/tg2sip
-        linuxdeploy --appdir ./tmp -e build/gen_db
+        linuxdeploy --appdir tmp -e build/tg2sip
+        linuxdeploy --appdir tmp -e build/gen_db
         
     - uses: actions/upload-artifact@v2
       if: matrix.tag == 'centos7'
