@@ -15,7 +15,7 @@ jobs:
     
     - name: Prepare
       if: startsWith(matrix.tag, 'centos')
-      run: /opt/rh/devtoolset-7/enable
+      run: source /opt/rh/devtoolset-7/enable
     
     - name: Build
       run: |
