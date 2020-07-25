@@ -1,8 +1,8 @@
 diff --git a/tdutils/td/utils/port/detail/ThreadStl.h b/tdutils/td/utils/port/detail/ThreadStl.h
-index 64bf321..68d3bf6 100644
+index ef6ff475..c0e18ee4 100644
 --- a/tdutils/td/utils/port/detail/ThreadStl.h
 +++ b/tdutils/td/utils/port/detail/ThreadStl.h
-@@ -37,6 +37,7 @@ class ThreadStl {
+@@ -41,6 +41,7 @@ class ThreadStl {
        invoke_tuple(std::move(args));
        clear_thread_locals();
      });

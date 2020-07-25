@@ -21,7 +21,7 @@
 using namespace tg;
 
 Client::Client(Settings &settings, std::shared_ptr<spdlog::logger> logger_,
-                   OptionalQueue<Object> &events_)
+               OptionalQueue<Object> &events_)
         : logger(std::move(logger_)), events(events_) {
 
     client = std::make_unique<td::Client>();
@@ -60,16 +60,17 @@ void Client::init_lib_parameters(Settings &settings) {
 
 void Client::init_proxy(Settings &settings) {
     if (settings.proxy_enabled()) {
-        auto socks_proxy = td_api::make_object<td_api::proxySocks5>(
-                settings.proxy_address(),
-                settings.proxy_port(),
+        auto socks_proxy_type = td_api::make_object<td_api::proxyTypeSocks5>(
                 settings.proxy_username(),
                 settings.proxy_password()
         );
-        proxy = td_api::move_object_as<td_api::Proxy>(socks_proxy);
+        set_proxy = td_api::make_object<td_api::addProxy>(
+                settings.proxy_address(),
+                settings.proxy_port(),
+                true,
+                td_api::move_object_as<td_api::ProxyType>(socks_proxy_type));
     } else {
-        auto empty_proxy = td_api::make_object<td_api::proxyEmpty>();
-        proxy = td_api::move_object_as<td_api::Proxy>(empty_proxy);
+        set_proxy = td_api::make_object<td_api::disableProxy>();
     }
 }
 
@@ -186,8 +187,7 @@ void Client::on_authorization_state_update(td_api::object_ptr<td_api::Authorizat
         case td_api::authorizationStateWaitEncryptionKey::ID:
             send_query(td_api::make_object<td_api::checkDatabaseEncryptionKey>(),
                        create_authentication_query_handler());
-            send_query(td_api::make_object<td_api::setProxy>(td_api::move_object_as<td_api::Proxy>(proxy)),
-                       create_authentication_query_handler());
+            send_query(std::move(set_proxy), create_authentication_query_handler());
             break;
         case td_api::authorizationStateWaitTdlibParameters::ID: {
             send_query(td_api::make_object<td_api::setTdlibParameters>(
