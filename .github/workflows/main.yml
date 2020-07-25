@@ -23,6 +23,7 @@ jobs:
         cmake --build . -j $(grep -c ^processor /proc/cpuinfo);
         chmod +x tg2sip
         chmod +x gen_db
+        ls -l
         
     - uses: actions/upload-artifact@v2
       with:
@@ -37,6 +38,7 @@ jobs:
     - name: Prepare AppImage
       if: matrix.tag == 'centos7'
       run: |
+        ls -l
         linuxdeploy --appdir tg2sip -e build/tg2sip
         linuxdeploy --appdir gen_db -e build/gen_db
         
@@ -70,6 +72,7 @@ jobs:
         
     - name: Pack
       run: |
+        ls -l tmp/tg2sip/usr
         ./linuxdeploy.AppImage --appdir tmp/tg2sip -d buildenv/tg2sip.desktop -i buildenv/icon.svg
         ./linuxdeploy.AppImage --appdir tmp/gen_db -d buildenv/gen_db.desktop -i buildenv/icon.svg
         ./appimagetool.AppImage tmp/tg2sip
