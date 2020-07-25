@@ -13,14 +13,9 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     
-    - name: Prepare
-      if: startsWith(matrix.tag, 'centos')
-      run: |
-        source /opt/rh/devtoolset-7/enable
-        gcc -v
-    
     - name: Build
       run: |
+        [ -d "/opt/rh" ] && source /opt/rh/devtoolset-7/enable
         mkdir build && cd build
         export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig
         cmake -DCMAKE_BUILD_TYPE=Release ..
