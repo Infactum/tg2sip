@@ -12,7 +12,11 @@ jobs:
       
     steps:
     - uses: actions/checkout@v2
-
+    
+    - name: Prepare
+      if: startsWith(matrix.tag, "centos")
+      run: /opt/rh/devtoolset-7/enable
+    
     - name: Build
       run: |
         mkdir build && cd build
