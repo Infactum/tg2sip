@@ -71,10 +71,10 @@ jobs:
         
     - name: Generate AppImage
       run: |
-        ./linuxdeploy.AppImage --appdir tmp -d buildenv/tg2sip.desktop -i buildenv/icon.svg;
-        ./linuxdeploy.AppImage --appdir tmp -d buildenv/gen_db.desktop -i buildenv/icon.svg;
-        ./appimagetool.AppImage build/tg2sip;
-        ./appimagetool.AppImage build/gen_db;
+        ./linuxdeploy.AppImage --appdir tmp -d buildenv/tg2sip.desktop -i buildenv/icon.svg
+        ./linuxdeploy.AppImage --appdir tmp -d buildenv/gen_db.desktop -i buildenv/icon.svg
+        ./appimagetool.AppImage build/tg2sip
+        ./appimagetool.AppImage build/gen_db
     
     - uses: actions/upload-artifact@v2
       with:
