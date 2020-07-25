@@ -34,16 +34,16 @@ jobs:
     - name: Prepare AppImage
       if: matrix.tag == 'centos7'
       run: |
-        mkdir tmp
-        ls -l
-        linuxdeploy --appdir tmp -e build/tg2sip
-        linuxdeploy --appdir tmp -e build/gen_db
+        linuxdeploy --appdir tg2sip -e build/tg2sip
+        linuxdeploy --appdir gen_db -e build/gen_db
         
     - uses: actions/upload-artifact@v2
       if: matrix.tag == 'centos7'
       with:
         name: tmp
-        path: tmp
+        path: |
+          tg2sip/
+          gen_db/
 
   appimage:
     needs: [build]
@@ -51,11 +51,6 @@ jobs:
     
     steps:
     - uses: actions/checkout@v2
-      
-    - uses: actions/download-artifact@v2
-      with:
-        name: tg2sip_centos7
-        path: build
       
     - uses: actions/download-artifact@v2
       with:
@@ -71,10 +66,10 @@ jobs:
         
     - name: Generate AppImage
       run: |
-        ./linuxdeploy.AppImage --appdir tmp -d buildenv/tg2sip.desktop -i buildenv/icon.svg
-        ./linuxdeploy.AppImage --appdir tmp -d buildenv/gen_db.desktop -i buildenv/icon.svg
-        ./appimagetool.AppImage build/tg2sip
-        ./appimagetool.AppImage build/gen_db
+        ./linuxdeploy.AppImage --appdir tmp/tg2sip -d buildenv/tg2sip.desktop -i buildenv/icon.svg
+        ./linuxdeploy.AppImage --appdir tmp/gen_db -d buildenv/gen_db.desktop -i buildenv/icon.svg
+        ./appimagetool.AppImage tmp/tg2sip
+        ./appimagetool.AppImage tmp/gen_db
     
     - uses: actions/upload-artifact@v2
       with:
