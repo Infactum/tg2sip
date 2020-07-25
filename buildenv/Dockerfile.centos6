@@ -89,11 +89,6 @@ RUN source /opt/rh/devtoolset-7/enable \
     && cd / \
     && rm -rf linuxdeploy
 
-RUN script=/usr/bin/scl_enable \
-    && echo "unset BASH_ENV PROMPT_COMMAND ENV" > $script \
-    && echo "source /opt/rh/devtoolset-7/enable" >> $script \
-    && chmod +x $script
+COPY centos_entrypoint.sh /
 
-ENV BASH_ENV="/usr/bin/scl_enable" \
-    ENV="/usr/bin/scl_enable" \
-    PROMPT_COMMAND=". /usr/bin/scl_enable"
+ENTRYPOINT ["/centos_entrypoint.sh"]
