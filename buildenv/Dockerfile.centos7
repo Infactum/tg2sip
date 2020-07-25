@@ -9,7 +9,10 @@ RUN yum install -y \
         make \
         git wget \
         zlib-devel opus-devel openssl-devel gperf \
-        pkgconfig ccache gperf unzip
+        pkgconfig ccache gperf unzip \
+        libpng-devel libjpeg-devel \
+        epel-release \
+    && yum install -y patchelf
 
 RUN wget https://cmake.org/files/v3.18/cmake-3.18.0-Linux-x86_64.sh \
     && sh cmake-3.18.0-Linux-x86_64.sh --prefix=/usr --exclude-subdir
@@ -52,6 +55,18 @@ RUN source /opt/rh/devtoolset-7/enable \
     && cmake --build . --target install -j $(grep -c ^processor /proc/cpuinfo) \
     && cd / \
     && rm -rf spdlog
+
+RUN source /opt/rh/devtoolset-7/enable \
+    && git clone --recursive https://github.com/linuxdeploy/linuxdeploy.git \
+    && cd linuxdeploy \
+    && git checkout 557bad2241df2c33972c7e6bdbf0c528cee27cc8 \
+    && mkdir build \
+    && cd build \
+    && export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig && cmake -DCMAKE_BUILD_TYPE=Release -DUSE_SYSTEM_CIMG=0 .. \
+    && cmake --build . -j $(grep -c ^processor /proc/cpuinfo) \
+    && cp bin/linuxdeploy /usr/local/bin \
+    && cd / \
+    && rm -rf linuxdeploy
 
 COPY centos_entrypoint.sh /
 
