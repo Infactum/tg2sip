@@ -1,0 +1,19 @@
+name: CI
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container: infactum/tg2sip-builder:bionic
+      
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Build
+      run: |
+        mkdir build && cd build
+        export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig
+        cmake -DCMAKE_BUILD_TYPE=Release ..
+        cmake --build . -j $(grep -c ^processor /proc/cpuinfo);
+    
