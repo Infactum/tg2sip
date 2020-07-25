@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 DOCKER_IMAGE=infactum/tg2sip-builder
 
 for DOCKER_TAG in bionic centos6 centos7

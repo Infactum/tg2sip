@@ -57,12 +57,9 @@ namespace state_machine::guards {
         // the event type 16 (flash) as stated in RFC 4730.
         // PJSUA maximum number of characters are 32.
 
-        auto content = td_api::move_object_as<td_api::messageText>(event->message_->content_);
+        auto text = static_cast<const td_api::messageText &>(*event->message_->content_).text_->text_;
         const std::regex dtmf_regex("^[0-9A-D*#]{1,32}$");
-        auto result = regex_match(content->text_->text_, dtmf_regex);
-
-        // Don't forget to put data back!
-        event->message_->content_ = td_api::move_object_as<td_api::MessageContent>(content);
+        auto result = regex_match(text, dtmf_regex);
 
         return result;
     }
@@ -312,7 +309,7 @@ namespace state_machine::actions {
 
         using namespace tgvoip;
 
-        auto state = td_api::move_object_as<td_api::callStateReady>(event->call_->state_);
+        const auto &state = static_cast<const td_api::callStateReady &>(*event->call_->state_);
         auto voip_controller = std::make_shared<VoIPController>();
 
         static auto config = VoIPController::Config(
@@ -336,11 +333,11 @@ namespace state_machine::actions {
         }
 
         char encryption_key[256];
-        memcpy(encryption_key, state->encryption_key_.c_str(), 256);
+        memcpy(encryption_key, state.encryption_key_.c_str(), 256);
         voip_controller->SetEncryptionKey(encryption_key, event->call_->is_outgoing_);
 
         vector<Endpoint> endpoints;
-        for (auto &connection : state->connections_) {
+        for (const auto &connection : state.connections_) {
             unsigned char peer_tag[16];
             memcpy(peer_tag, connection->peer_tag_.c_str(), 16);
             auto ipv4 = IPv4Address(connection->ip_);
@@ -566,10 +563,10 @@ namespace state_machine::actions {
                               const td_api::object_ptr<td::td_api::updateNewMessage> &event,
                               std::shared_ptr<spdlog::logger> logger) const {
 
-        auto content = td_api::move_object_as<td_api::messageText>(event->message_->content_);
-        DEBUG(logger, "[{}] sending DTMF {}", ctx.id(), content->text_->text_);
+        auto text = static_cast<const td_api::messageText &>(*event->message_->content_).text_->text_;
+        DEBUG(logger, "[{}] sending DTMF {}", ctx.id(), text);
         try {
-            sip_client.DialDtmf(ctx.sip_call_id, content->text_->text_);
+            sip_client.DialDtmf(ctx.sip_call_id, text);
         } catch (const pj::Error &error) {
             logger->error(error.reason);
         }

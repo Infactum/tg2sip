@@ -152,21 +152,22 @@ private:
                             sequence_done = true;
                             std::cerr << "Terminated" << std::endl;
                         },
-                        [this](td_api::authorizationStateWaitCode &wait_code) {
-                            std::string first_name;
-                            std::string last_name;
-                            if (!wait_code.is_registered_) {
-                                std::cerr << "Enter your first name: ";
-                                std::cin >> first_name;
-                                std::cerr << "Enter your last name: ";
-                                std::cin >> last_name;
-                            }
-                            std::cerr << "Enter authentication code: ";
+                        [this](td_api::authorizationStateWaitCode &) {
+                            std::cout << "Enter authentication code: " << std::flush;
                             std::string code;
                             std::cin >> code;
-                            send_query(
-                                    td_api::make_object<td_api::checkAuthenticationCode>(code, first_name, last_name),
-                                    create_authentication_query_handler());
+                            send_query(td_api::make_object<td_api::checkAuthenticationCode>(code),
+                                       create_authentication_query_handler());
+                        },
+                        [this](td_api::authorizationStateWaitRegistration &) {
+                            std::string first_name;
+                            std::string last_name;
+                            std::cout << "Enter your first name: " << std::flush;
+                            std::cin >> first_name;
+                            std::cout << "Enter your last name: " << std::flush;
+                            std::cin >> last_name;
+                            send_query(td_api::make_object<td_api::registerUser>(first_name, last_name),
+                                       create_authentication_query_handler());
                         },
                         [this](td_api::authorizationStateWaitPassword &) {
                             std::cerr << "Enter authentication password: ";
@@ -175,34 +176,35 @@ private:
                             send_query(td_api::make_object<td_api::checkAuthenticationPassword>(password),
                                        create_authentication_query_handler());
                         },
+                        [this](td_api::authorizationStateWaitOtherDeviceConfirmation &state) {
+                            std::cout << "Confirm this login link on another device: " << state.link_ << std::endl;
+                        },
                         [this](td_api::authorizationStateWaitPhoneNumber &) {
-                            std::cerr << "Enter phone number: ";
+                            std::cout << "Enter phone number: " << std::flush;
                             std::string phone_number;
                             std::cin >> phone_number;
-                            send_query(td_api::make_object<td_api::setAuthenticationPhoneNumber>(
-                                    phone_number, false /*allow_flash_calls*/, false /*is_current_phone_number*/),
+                            send_query(td_api::make_object<td_api::setAuthenticationPhoneNumber>(phone_number, nullptr),
                                        create_authentication_query_handler());
                         },
                         [this](td_api::authorizationStateWaitEncryptionKey &) {
                             send_query(td_api::make_object<td_api::checkDatabaseEncryptionKey>(""),
                                        create_authentication_query_handler());
 
-                            td_api::object_ptr<td_api::Proxy> proxy;
                             if (settings.proxy_enabled()) {
-                                auto socks_proxy = td_api::make_object<td_api::proxySocks5>(
-                                        settings.proxy_address(),
-                                        settings.proxy_port(),
+                                auto socks_proxy_type = td_api::make_object<td_api::proxyTypeSocks5>(
                                         settings.proxy_username(),
                                         settings.proxy_password()
                                 );
-                                proxy = td_api::move_object_as<td_api::Proxy>(socks_proxy);
+                                send_query(td_api::make_object<td_api::addProxy>(
+                                        settings.proxy_address(),
+                                        settings.proxy_port(),
+                                        true,
+                                        td_api::move_object_as<td_api::ProxyType>(socks_proxy_type)),
+                                           [](Object) {});
                             } else {
-                                auto empty_proxy = td_api::make_object<td_api::proxyEmpty>();
-                                proxy = td_api::move_object_as<td_api::Proxy>(empty_proxy);
+                                send_query(td_api::make_object<td_api::disableProxy>(), [](Object) {});
                             }
-                            send_query(td_api::make_object<td_api::setProxy>(
-                                    td_api::move_object_as<td_api::Proxy>(proxy)),
-                                       [](Object) {});
+
                         },
                         [this](td_api::authorizationStateWaitTdlibParameters &) {
                             auto lib_parameters = td_api::make_object<td_api::tdlibParameters>();

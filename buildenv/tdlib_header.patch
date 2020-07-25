@@ -1,19 +1,19 @@
 diff --git a/td/telegram/Td.cpp b/td/telegram/Td.cpp
-index a150e6c..cd66d91 100644
+index eafec324..3cce46f5 100644
 --- a/td/telegram/Td.cpp
 +++ b/td/telegram/Td.cpp
-@@ -4827,10 +4827,10 @@ Status Td::set_parameters(td_api::object_ptr<td_api::tdlibParameters> parameters
-   if (options.application_version.empty()) {
+@@ -4899,10 +4899,10 @@ Status Td::set_parameters(td_api::object_ptr<td_api::tdlibParameters> parameters
+   if (options_.application_version.empty()) {
      return Status::Error(400, "Application version must be non-empty");
    }
--  if (options.api_id != 21724) {
--    options.application_version += ", TDLib ";
--    options.application_version += TDLIB_VERSION;
+-  if (options_.api_id != 21724) {
+-    options_.application_version += ", TDLib ";
+-    options_.application_version += TDLIB_VERSION;
 -  }
-+  // if (options.api_id != 21724) {
-+  //   options.application_version += ", TDLib ";
-+  //   options.application_version += TDLIB_VERSION;
++  // if (options_.api_id != 21724) {
++  //   options_.application_version += ", TDLib ";
++  //   options_.application_version += TDLIB_VERSION;
 +  // }
-   G()->set_mtproto_header(std::make_unique<MtprotoHeader>(options));
- 
-   state_ = State::Decrypt;
+   options_.language_pack = "";
+   options_.language_code = "";
+   options_.parameters = "";

@@ -11,8 +11,8 @@ RUN yum install -y \
         zlib-devel opus-devel openssl-devel gperf \
         pkgconfig ccache gperf unzip
 
-RUN wget https://cmake.org/files/v3.9/cmake-3.9.6-Linux-x86_64.sh \
-    && sh cmake-3.9.6-Linux-x86_64.sh --prefix=/usr --exclude-subdir
+RUN wget https://cmake.org/files/v3.18/cmake-3.18.0-Linux-x86_64.sh \
+    && sh cmake-3.18.0-Linux-x86_64.sh --prefix=/usr --exclude-subdir
 
 COPY tdlib_header.patch /
 COPY tdlib_threadname.patch /
@@ -20,13 +20,13 @@ COPY tdlib_threadname.patch /
 RUN source /opt/rh/devtoolset-7/enable \
     && git clone https://github.com/tdlib/td.git \
     && cd td \
-    && git reset --hard v1.2.0 \
+    && git reset --hard v1.6.0 \
     && git apply /tdlib_header.patch \
     && git apply /tdlib_threadname.patch \
     && mkdir build \
     && cd build \
     && cmake -DCMAKE_BUILD_TYPE=Release .. \
-    && cmake --build . --target install \
+    && cmake --build . --target install -j $(grep -c ^processor /proc/cpuinfo) \
     && cd / \
     && rm -rf td
 
@@ -38,7 +38,7 @@ RUN source /opt/rh/devtoolset-7/enable \
     && git reset --hard 2.9 \
     && cp /config_site.h pjlib/include/pj \
     && ./configure --disable-sound CFLAGS="-O3 -DNDEBUG" \
-    && make dep && make && make install \
+    && make dep && make -j $(grep -c ^processor /proc/cpuinfo) && make install \
     && cd / \
     && rm -rf pjproject
 
@@ -49,7 +49,7 @@ RUN source /opt/rh/devtoolset-7/enable \
     && mkdir build \
     && cd build \
     && cmake -DCMAKE_BUILD_TYPE=Release -DSPDLOG_BUILD_EXAMPLES=OFF -DSPDLOG_BUILD_TESTING=OFF .. \
-    && cmake --build . --target install \
+    && cmake --build . --target install -j $(grep -c ^processor /proc/cpuinfo) \
     && cd / \
     && rm -rf spdlog
 

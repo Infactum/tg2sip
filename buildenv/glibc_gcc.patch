@@ -1,0 +1,17 @@
+diff --git a/configure b/configure
+index 6cf85e5..2613fc4 100755
+--- a/configure
++++ b/configure
+@@ -4938,10 +4938,10 @@ else
+ $as_echo_n "checking version of $CC... " >&6; }
+   ac_prog_version=`$CC -v 2>&1 | sed -n 's/^.*version \([egcygnustpi-]*[0-9.]*\).*$/\1/p'`
+   case $ac_prog_version in
+-    '') ac_prog_version="v. ?.??, bad"; ac_verc_fail=yes;;
++    '') ac_prog_version="v. ?.??, bad"; ac_verc_fail=no;;
+     3.4* | 4.[0-9]* )
+        ac_prog_version="$ac_prog_version, ok"; ac_verc_fail=no;;
+-    *) ac_prog_version="$ac_prog_version, bad"; ac_verc_fail=yes;;
++    *) ac_prog_version="$ac_prog_version, bad"; ac_verc_fail=no;;
+ 
+   esac
+   { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_prog_version" >&5
