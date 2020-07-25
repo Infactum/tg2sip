@@ -4,6 +4,7 @@ on: [push, pull_request]
 
 jobs:
   build:
+    name: Native Build
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -46,6 +47,7 @@ jobs:
           gen_db/
 
   appimage:
+    name: Pack AppImage
     needs: [build]
     runs-on: ubuntu-latest
     
@@ -64,7 +66,7 @@ jobs:
         wget https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage -O linuxdeploy.AppImage
         chmod +x linuxdeploy.AppImage
         
-    - name: Generate AppImage
+    - name: Pack
       run: |
         ./linuxdeploy.AppImage --appdir tmp/tg2sip -d buildenv/tg2sip.desktop -i buildenv/icon.svg
         ./linuxdeploy.AppImage --appdir tmp/gen_db -d buildenv/gen_db.desktop -i buildenv/icon.svg
@@ -78,4 +80,34 @@ jobs:
           tg2sip-x86_64.AppImage
           gen_db-x86_64.AppImage
           settings.ini;
+  
+  draft:
+    name: Draft Release
+    needs: [build, appimage]
+    runs-on: ubuntu-latest
+    if: github.event_name == "push"
+    #    && github.ref == master
+    steps:
+      - uses: release-drafter/release-drafter@v5
+        id: create_release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      
+      - uses: actions/download-artifact@v2
+        with:
+          name: tg2sip_universal
+          path: tg2sip_universal
+      
+      - run: zip tg2sip_universal tg2sip_universal/*
+      
+      - name: Upload Assets
+        id: upload-release-asset 
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./tg2sip_universal.zip
+          asset_name: tg2sip_universal.zip
+          asset_content_type: application/zip
       
