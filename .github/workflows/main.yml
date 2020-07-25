@@ -5,7 +5,10 @@ on: [push, pull_request]
 jobs:
   build:
     runs-on: ubuntu-latest
-    container: infactum/tg2sip-builder:bionic
+    strategy:
+      matrix:
+        tag: [bionic, centos7, centos6]
+    container: infactum/tg2sip-builder:${{ matrix.tag }}
       
     steps:
     - uses: actions/checkout@v2
@@ -16,4 +19,12 @@ jobs:
         export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig
         cmake -DCMAKE_BUILD_TYPE=Release ..
         cmake --build . -j $(grep -c ^processor /proc/cpuinfo);
+        
+    - uses: actions/upload-artifact@v2
+      with:
+        name: tg2sip_${{ matrix.tag }}
+        path: |
+          tg2sip
+          gen_db
+          settings.ini
     
