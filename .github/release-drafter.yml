@@ -1,2 +1,4 @@
 template: |
-  Last successfull build
+  # What's Changed
+  
+  $CHANGES
