@@ -21,6 +21,8 @@ jobs:
         export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig
         cmake -DCMAKE_BUILD_TYPE=Release ..
         cmake --build . -j $(grep -c ^processor /proc/cpuinfo);
+        chmod +x tg2sip
+        chmod +x gen_db
         
     - uses: actions/upload-artifact@v2
       with:
