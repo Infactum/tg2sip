@@ -39,9 +39,3 @@ Extra information about caller Telegram account will be added into `X-TG-*` SIP 
 [![paypal](https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=755FZWPRC9YGL&lc=US&item_name=TG2SIP&currency_code=USD&bn=PP%2dDonationsBF%3abtn_donateCC_LG%2egif%3aNonHosted)
 
 [Yandex.Money](https://yasobe.ru/na/tg2sip)
-
-**BTC** 39wNzvtcyRrTKmq5DjcUfGTixnGVSf8qLg  
-**BCH** qqgwg0g96sayht4lzxc89ky7mkdxfyj7jcl5m8qfps  
-**ETH** 0x72B8cb476b2c85b1170Ae2cdFB243B17680290b4  
-**ETC** 0x9C7d6CD9F9E0584e65f8aD20e1d2Ced947a55207  
-**LTC** MFyBRJTnHqXharzH7D3FYeEhAJuywMRfMd  
