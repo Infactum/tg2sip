@@ -20,10 +20,11 @@ RUN wget https://cmake.org/files/v3.18/cmake-3.18.0-Linux-x86_64.sh \
 COPY tdlib_header.patch /
 COPY tdlib_threadname.patch /
 
+# TDLib 1.7.10
 RUN source /opt/rh/devtoolset-7/enable \
     && git clone https://github.com/tdlib/td.git \
     && cd td \
-    && git reset --hard v1.6.0 \
+    && git reset --hard a53cb30e99f937cfd64e0266fa558785a184a553 \
     && git apply /tdlib_header.patch \
     && git apply /tdlib_threadname.patch \
     && mkdir build \
@@ -57,9 +58,10 @@ RUN source /opt/rh/devtoolset-7/enable \
     && rm -rf spdlog
 
 RUN source /opt/rh/devtoolset-7/enable \
-    && git clone --recursive https://github.com/linuxdeploy/linuxdeploy.git \
+    && git clone https://github.com/linuxdeploy/linuxdeploy.git \
     && cd linuxdeploy \
     && git checkout 557bad2241df2c33972c7e6bdbf0c528cee27cc8 \
+    && git submodule update --init --recursive \
     && mkdir build \
     && cd build \
     && export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig && cmake -DCMAKE_BUILD_TYPE=Release -DUSE_SYSTEM_CIMG=0 .. \

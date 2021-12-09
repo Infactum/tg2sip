@@ -7,7 +7,7 @@ add_subdirectory(libtgvoip)
 
 find_package(PkgConfig REQUIRED)
 find_package(Threads REQUIRED)
-find_package(Td 1.6.0 REQUIRED)
+find_package(Td 1.7.10 REQUIRED)
 find_package(spdlog 0.17 REQUIRED)
 pkg_check_modules(PJSIP libpjproject>=2.8 REQUIRED)
 pkg_check_modules(OPUS opus REQUIRED)

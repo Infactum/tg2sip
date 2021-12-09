@@ -14,9 +14,10 @@ RUN wget https://cmake.org/files/v3.18/cmake-3.18.0-Linux-x86_64.sh \
 COPY tdlib_header.patch /
 COPY tdlib_threadname.patch /
 
+# TDLib 1.7.10
 RUN git clone https://github.com/tdlib/td.git \
     && cd td \
-    && git reset --hard v1.6.0 \
+    && git reset --hard a53cb30e99f937cfd64e0266fa558785a184a553 \
     && git apply /tdlib_header.patch \
     && git apply /tdlib_threadname.patch \
     && mkdir build \

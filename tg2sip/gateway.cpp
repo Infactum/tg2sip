@@ -108,6 +108,7 @@ namespace state_machine::actions {
                     ctx.tg_call_id, /* call_id_ */
                     false, /* is_disconnected_ */
                     0, /* duration_ */
+                    false, /* is_video_ */
                     ctx.tg_call_id /*connection_id */
             )).get();
 
@@ -211,7 +212,8 @@ namespace state_machine::actions {
                 td_api::make_object<td_api::callProtocol>(settings.udp_p2p(),
                                                           settings.udp_reflector(),
                                                           CALL_PROTO_MIN_LAYER,
-                                                          tgvoip::VoIPController::GetConnectionMaxLayer())
+                                                          tgvoip::VoIPController::GetConnectionMaxLayer(),
+                                                          vector<string>{tgvoip::VoIPController::GetVersion()})
         )).get();
 
         if (response->get_id() == td_api::error::ID) {
@@ -337,13 +339,18 @@ namespace state_machine::actions {
         voip_controller->SetEncryptionKey(encryption_key, event->call_->is_outgoing_);
 
         vector<Endpoint> endpoints;
-        for (const auto &connection : state.connections_) {
+        for (const auto &server : state.servers_) {
+            if (server->type_->get_id() != td_api::callServerTypeTelegramReflector::ID)
+                continue;
+
+            auto reflector = static_cast<const td_api::callServerTypeTelegramReflector *>(server->type_.get());
+
             unsigned char peer_tag[16];
-            memcpy(peer_tag, connection->peer_tag_.c_str(), 16);
-            auto ipv4 = IPv4Address(connection->ip_);
-            auto ipv6 = IPv6Address(connection->ipv6_);
-            endpoints.emplace_back(Endpoint(connection->id_,
-                                            static_cast<uint16_t>(connection->port_),
+            memcpy(peer_tag, reflector->peer_tag_.c_str(), 16);
+            auto ipv4 = IPv4Address(server->ip_address_);
+            auto ipv6 = IPv6Address(server->ipv6_address_);
+            endpoints.emplace_back(Endpoint(server->id_,
+                                            static_cast<uint16_t>(server->port_),
                                             ipv4,
                                             ipv6,
                                             Endpoint::UDP_RELAY,
@@ -419,12 +426,14 @@ namespace state_machine::actions {
         }
     }
 
-    void DialTg::dial_by_id(int32_t id) {
+    void DialTg::dial_by_id(int64_t id) {
         auto response = tg_client_->send_query_async(td_api::make_object<td_api::createCall>(
                 id /* id */,
                 td_api::make_object<td_api::callProtocol>(settings_->udp_p2p(), settings_->udp_reflector(),
                                                           CALL_PROTO_MIN_LAYER,
-                                                          tgvoip::VoIPController::GetConnectionMaxLayer()))
+                                                          tgvoip::VoIPController::GetConnectionMaxLayer(),
+                                                          vector<string>{tgvoip::VoIPController::GetVersion()}),
+                false /* is_video_ */)
         ).get();
 
         if (response->get_id() == td_api::error::ID) {
@@ -535,7 +544,7 @@ namespace state_machine::actions {
             return;
         }
 
-        auto id = static_cast<int32_t>(chat->id_);
+        auto id = chat->id_;
         DEBUG(logger_, "[{}] adding id {} for {} to username cache", ctx_->id(), id, ctx_->ext_username);
         cache_->username_cache.emplace(ctx_->ext_username, id);
         dial_by_id(id);
@@ -835,15 +844,20 @@ void Gateway::process_event(td::td_api::object_ptr<td::td_api::updateCall> updat
 
 void Gateway::process_event(td::td_api::object_ptr<td::td_api::updateNewMessage> update_message) {
 
+    auto &sender = update_message->message_->sender_id_;
+    if (sender->get_id() == td_api::messageSenderUser::ID)
+        return;
+    auto user = static_cast<const td_api::messageSenderUser *>(sender.get());
+
     std::vector<Bridge *> matches;
     for (auto bridge : bridges) {
-        if (bridge->ctx->user_id == update_message->message_->sender_user_id_) {
+        if (bridge->ctx->user_id == user->user_id_) {
             matches.emplace_back(bridge);
         }
     }
 
     if (matches.size() > 1) {
-        logger_->error("ambiguous message from {}", update_message->message_->sender_user_id_);
+        logger_->error("ambiguous message from {}", user->user_id_);
         return;
     } else if (matches.size() == 1) {
         TRACE(logger_, "routing message to ctx {}", matches[0]->ctx->id());

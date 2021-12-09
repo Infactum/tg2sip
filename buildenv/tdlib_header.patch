@@ -1,8 +1,8 @@
 diff --git a/td/telegram/Td.cpp b/td/telegram/Td.cpp
-index eafec324..3cce46f5 100644
+index 0cbcde9c..50e05ffa 100644
 --- a/td/telegram/Td.cpp
 +++ b/td/telegram/Td.cpp
-@@ -4899,10 +4899,10 @@ Status Td::set_parameters(td_api::object_ptr<td_api::tdlibParameters> parameters
+@@ -4419,10 +4419,10 @@ Status Td::set_parameters(td_api::object_ptr<td_api::tdlibParameters> parameters
    if (options_.application_version.empty()) {
      return Status::Error(400, "Application version must be non-empty");
    }
@@ -14,6 +14,6 @@ index eafec324..3cce46f5 100644
 +  //   options_.application_version += ", TDLib ";
 +  //   options_.application_version += TDLIB_VERSION;
 +  // }
-   options_.language_pack = "";
-   options_.language_code = "";
-   options_.parameters = "";
+   options_.language_pack = string();
+   options_.language_code = string();
+   options_.parameters = string();
