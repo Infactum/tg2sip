@@ -25,6 +25,15 @@ namespace td_api = td::td_api;
 
 volatile sig_atomic_t e_flag = 0;
 
+namespace {
+    vector<string> voip_library_versions() {
+        // actually we want to provide real tgvoip version from
+        // tgvoip::VoIPController::GetVersion()
+        // but telegram servers accepts only this one
+        return vector<string>{"2.4.4"};
+    }
+}
+
 namespace state_machine::guards {
     bool IsIncoming::operator()(const td::td_api::object_ptr<td::td_api::updateCall> &event) const {
         return !event->call_->is_outgoing_;
@@ -213,7 +222,7 @@ namespace state_machine::actions {
                                                           settings.udp_reflector(),
                                                           CALL_PROTO_MIN_LAYER,
                                                           tgvoip::VoIPController::GetConnectionMaxLayer(),
-                                                          vector<string>{tgvoip::VoIPController::GetVersion()})
+                                                          voip_library_versions())
         )).get();
 
         if (response->get_id() == td_api::error::ID) {
@@ -432,7 +441,7 @@ namespace state_machine::actions {
                 td_api::make_object<td_api::callProtocol>(settings_->udp_p2p(), settings_->udp_reflector(),
                                                           CALL_PROTO_MIN_LAYER,
                                                           tgvoip::VoIPController::GetConnectionMaxLayer(),
-                                                          vector<string>{tgvoip::VoIPController::GetVersion()}),
+                                                          voip_library_versions()),
                 false /* is_video_ */)
         ).get();
 
