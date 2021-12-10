@@ -170,7 +170,7 @@ namespace state_machine::actions {
 
         void parse_error(td::td_api::object_ptr<td::td_api::error> error);
 
-        void dial_by_id(int32_t id);
+        void dial_by_id(int64_t id);
 
         void dial_by_phone();
 
@@ -226,8 +226,8 @@ namespace state_machine {
 }
 
 struct Cache {
-    std::map<std::string, int32_t> username_cache;
-    std::map<std::string, int32_t> phone_cache;
+    std::map<std::string, int64_t> username_cache;
+    std::map<std::string, int64_t> phone_cache;
 };
 
 class Context {
@@ -242,7 +242,7 @@ public:
 
     std::string ext_phone;
     std::string ext_username;
-    int32_t user_id{0};
+    int64_t user_id{0};
 
     pj::CallOpParam hangup_prm;
 
