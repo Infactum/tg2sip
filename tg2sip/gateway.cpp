@@ -253,7 +253,7 @@ namespace state_machine::actions {
             ctx.ext_phone = ext.substr(1, std::string::npos);
         } else if (is_digits(ext)) {
             try {
-                ctx.user_id = std::stoi(ext);
+                ctx.user_id = std::stol(ext);
             } catch (const std::invalid_argument &e) {
                 ext_valid = false;
             } catch (const std::out_of_range &e) {
