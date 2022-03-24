@@ -106,7 +106,7 @@ void AudioInputWASAPI::Start(){
 	if(!thread){
 		thread=CreateThread(NULL, 0, AudioInputWASAPI::StartThread, this, 0, NULL);
 	}
-	
+
 	if(audioClient && !started){
 		LOGI("audioClient->Start");
 		audioClient->Start();
@@ -155,7 +155,7 @@ void AudioInputWASAPI::EnumerateDevices(std::vector<tgvoip::AudioInputDevice>& d
 		res=device->OpenPropertyStore(STGM_READ, &propStore);
 		SafeRelease(&device);
 		SCHECK_RES(res, "OpenPropertyStore");
-		
+
 		PROPVARIANT friendlyName;
 		PropVariantInit(&friendlyName);
 		res=propStore->GetValue(PKEY_Device_FriendlyName, &friendlyName);
@@ -217,13 +217,12 @@ void AudioInputWASAPI::ActuallySetCurrentDevice(std::string deviceID){
 #ifdef TGVOIP_WINDOWS_DESKTOP
 	SafeRelease(&device);
 
-	IMMDeviceCollection *deviceCollection = NULL;
-
 	if(deviceID=="default"){
 		isDefaultDevice=true;
 		res=enumerator->GetDefaultAudioEndpoint(eCapture, eCommunications, &device);
 		CHECK_RES(res, "GetDefaultAudioEndpoint");
 	}else{
+		IMMDeviceCollection *deviceCollection = NULL;
 		isDefaultDevice=false;
 		res=enumerator->EnumAudioEndpoints(eCapture, DEVICE_STATE_ACTIVE, &deviceCollection);
 		CHECK_RES(res, "EnumAudioEndpoints");
@@ -250,29 +249,46 @@ void AudioInputWASAPI::ActuallySetCurrentDevice(std::string deviceID){
 				break;
 			}
 		}
-	}
+		if (deviceCollection)
+			SafeRelease(&deviceCollection);
 
-	if(deviceCollection)
-		SafeRelease(&deviceCollection);
+		if (!device) {
+			LOGW("Requested device not found, using default");
+			ActuallySetCurrentDevice("default");
+			return;
+		}
+	}
 
 	if(!device){
 		LOGE("Didn't find capture device; failing");
 		failed=true;
 		return;
 	}
-	
+
 	res=device->Activate(__uuidof(IAudioClient), CLSCTX_INPROC_SERVER, NULL, (void**)&audioClient);
 	CHECK_RES(res, "device->Activate");
 #else
-	Platform::String^ defaultDevID=Windows::Media::Devices::MediaDevice::GetDefaultAudioCaptureId(Windows::Media::Devices::AudioDeviceRole::Communications);
-	if(defaultDevID == nullptr){
-		LOGE("Didn't find capture device; failing");
-		failed=true;
-		return;
+	std::wstring devID;
+
+	if (deviceID=="default"){
+		Platform::String^ defaultDevID=Windows::Media::Devices::MediaDevice::GetDefaultAudioCaptureId(Windows::Media::Devices::AudioDeviceRole::Communications);
+		if(defaultDevID==nullptr){
+			LOGE("Didn't find capture device; failing");
+			failed=true;
+			return;
+		}else{
+			isDefaultDevice=true;
+			devID=defaultDevID->Data();
+		}
+	}else{
+		int wchars_num=MultiByteToWideChar(CP_UTF8, 0, deviceID.c_str(), -1, NULL, 0);
+		wchar_t* wstr=new wchar_t[wchars_num];
+		MultiByteToWideChar(CP_UTF8, 0, deviceID.c_str(), -1, wstr, wchars_num);
+		devID=wstr;
 	}
 
 	HRESULT res1, res2;
-	IAudioClient2* audioClient2=WindowsSandboxUtils::ActivateAudioDevice(defaultDevID->Data(), &res1, &res2);
+	IAudioClient2* audioClient2=WindowsSandboxUtils::ActivateAudioDevice(devID.c_str(), &res1, &res2);
 	CHECK_RES(res1, "activate1");
 	CHECK_RES(res2, "activate2");
 

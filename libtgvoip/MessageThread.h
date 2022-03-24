@@ -41,7 +41,7 @@ namespace tgvoip{
 		uint32_t lastMessageID=1;
 		bool cancelCurrent=false;
 
-#ifdef _WIN32
+#ifdef TGVOIP_WIN32_THREADING
 		HANDLE event;
 #else
 		pthread_cond_t cond;

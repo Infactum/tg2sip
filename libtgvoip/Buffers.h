@@ -66,7 +66,7 @@ namespace tgvoip{
 		size_t GetLength();
 		void Reset();
 		void Rewind(size_t numBytes);
-		
+
 		BufferOutputStream& operator=(BufferOutputStream&& other){
 			if(this!=&other){
 				if(!bufferProvided && buffer)
@@ -264,6 +264,10 @@ namespace tgvoip{
 			if(_i<0)
 				_i=size+_i;
 			return data[_i];
+		}
+
+		size_t Size(){
+			return size;
 		}
 	private:
 		std::array<T, size> data;

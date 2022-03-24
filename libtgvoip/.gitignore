@@ -18,9 +18,33 @@ bld/
 [Bb]in/
 [Oo]bj/
 DerivedData/
+*.o
 
 # Visual Studio 2015 cache/options directory
 .vs/
 
 xcuserdata/
-autom4te.cache/
+
+# autoconf build files
+/Makefile
+/Makefile.in
+/aclocal.m4
+/autom4te.cache/
+/compile
+/config.*
+/configure
+/depcomp
+/install-sh
+/libtool
+/ltmain.sh
+/m4/
+/missing
+/stamp-h?
+.deps/
+.dirstamp
+.libs/
+*.l[ao]
+*~
+
+# generated pkg-config file
+/tgvoip.pc

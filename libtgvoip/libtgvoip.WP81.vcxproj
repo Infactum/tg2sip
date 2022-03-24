@@ -159,6 +159,7 @@
     <ClInclude Include="OpusEncoder.h" />
     <ClInclude Include="os\windows\AudioInputWASAPI.h" />
     <ClInclude Include="os\windows\AudioOutputWASAPI.h" />
+    <ClInclude Include="os\windows\MinGWSupport.h" />
     <ClInclude Include="os\windows\NetworkSocketWinsock.h" />
     <ClInclude Include="os\windows\WindowsSandboxUtils.h" />
     <ClInclude Include="PacketReassembler.h" />

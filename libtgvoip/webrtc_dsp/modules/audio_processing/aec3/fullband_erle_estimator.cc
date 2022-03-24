@@ -57,7 +57,7 @@ void FullBandErleEstimator::Update(rtc::ArrayView<const float> X2,
       if (instantaneous_erle_.Update(Y2_sum, E2_sum)) {
         hold_counter_time_domain_ = kErleHold;
         erle_time_domain_log2_ +=
-            0.1f * ((instantaneous_erle_.GetInstErleLog2().value()) -
+            0.1f * ((*instantaneous_erle_.GetInstErleLog2()) -
                     erle_time_domain_log2_);
         erle_time_domain_log2_ = rtc::SafeClamp(
             erle_time_domain_log2_, min_erle_log2_, max_erle_lf_log2);
@@ -130,21 +130,21 @@ void FullBandErleEstimator::ErleInstantaneous::Dump(
                        erle_log2_ ? *erle_log2_ : -10.f);
   data_dumper->DumpRaw(
       "aec3_erle_instantaneous_quality",
-      GetQualityEstimate() ? GetQualityEstimate().value() : 0.f);
+      GetQualityEstimate() ? *GetQualityEstimate() : 0.f);
   data_dumper->DumpRaw("aec3_fullband_erle_max_log2", max_erle_log2_);
   data_dumper->DumpRaw("aec3_fullband_erle_min_log2", min_erle_log2_);
 }
 
 void FullBandErleEstimator::ErleInstantaneous::UpdateMaxMin() {
   RTC_DCHECK(erle_log2_);
-  if (erle_log2_.value() > max_erle_log2_) {
-    max_erle_log2_ = erle_log2_.value();
+  if (*erle_log2_ > max_erle_log2_) {
+    max_erle_log2_ = *erle_log2_;
   } else {
     max_erle_log2_ -= 0.0004;  // Forget factor, approx 1dB every 3 sec.
   }
 
-  if (erle_log2_.value() < min_erle_log2_) {
-    min_erle_log2_ = erle_log2_.value();
+  if (*erle_log2_ < min_erle_log2_) {
+    min_erle_log2_ = *erle_log2_;
   } else {
     min_erle_log2_ += 0.0004;  // Forget factor, approx 1dB every 3 sec.
   }
@@ -155,7 +155,7 @@ void FullBandErleEstimator::ErleInstantaneous::UpdateQualityEstimate() {
   float quality_estimate = 0.f;
   RTC_DCHECK(erle_log2_);
   if (max_erle_log2_ > min_erle_log2_) {
-    quality_estimate = (erle_log2_.value() - min_erle_log2_) /
+    quality_estimate = (*erle_log2_ - min_erle_log2_) /
                        (max_erle_log2_ - min_erle_log2_);
   }
   if (quality_estimate > inst_quality_estimate_) {

@@ -38,7 +38,7 @@ AudioOutputWave::~AudioOutputWave(){
 void AudioOutputWave::Start(){
 	if(!isPlaying){
 		isPlaying=true;
-		
+
 		for(int i=0;i<4;i++){
 			MMRESULT res=waveOutPrepareHeader(hWaveOut, &buffers[i], sizeof(WAVEHDR));
 			CHECK_ERROR(res, "waveOutPrepareHeader failed");
@@ -101,7 +101,7 @@ void AudioOutputWave::SetCurrentDevice(std::string deviceID){
 
 	bool wasPlaying=isPlaying;
 	isPlaying=false;
-	LOGV("closing, hWaveOut=%d", (int)hWaveOut);
+	LOGV("closing, hWaveOut=%lld", (long long)hWaveOut);
 	if(hWaveOut){
 		MMRESULT res;
 		if(isPlaying){

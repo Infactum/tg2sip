@@ -7,7 +7,9 @@
 #ifndef __VOIPCONTROLLER_H
 #define __VOIPCONTROLLER_H
 
-#ifndef _WIN32
+#ifdef _WIN32
+#include <windows.h>
+#else
 #include <arpa/inet.h>
 #include <netinet/in.h>
 #endif
@@ -24,6 +26,7 @@
 #include "video/VideoSource.h"
 #include "video/VideoRenderer.h"
 #include <atomic>
+#include "video/ScreamCongestionController.h"
 #if defined(TGVOIP_USE_SOFTWARE_AUDIO)
 #include <pjsua2.hpp>
 #include "audio/SoftwareAudioInput.h"
@@ -36,7 +39,6 @@
 #include "JitterBuffer.h"
 #include "OpusDecoder.h"
 #include "OpusEncoder.h"
-#include "EchoCanceller.h"
 #include "CongestionControl.h"
 #include "NetworkSocket.h"
 #include "Buffers.h"
@@ -44,7 +46,7 @@
 #include "MessageThread.h"
 #include "utils.h"
 
-#define LIBTGVOIP_VERSION "2.4.3"
+#define LIBTGVOIP_VERSION "2.4.4"
 
 #ifdef _WIN32
 #undef GetCurrentTime
@@ -56,6 +58,12 @@
 #define TGVOIP_PEER_CAP_VIDEO_DISPLAY 4
 
 namespace tgvoip{
+
+	class EchoCanceller;
+
+	namespace effects {
+	class Volume;
+	} // namespace effects
 
 	enum{
 		PROXY_NONE=0,
@@ -110,7 +118,7 @@ namespace tgvoip{
 		void (*aes_cbc_encrypt)(uint8_t* in, uint8_t* out, size_t length, uint8_t* key, uint8_t* iv);
 		void (*aes_cbc_decrypt)(uint8_t* in, uint8_t* out, size_t length, uint8_t* key, uint8_t* iv);
 	};
-	
+
 	struct CellularCarrierInfo{
 		std::string name;
 		std::string mcc;
@@ -130,7 +138,7 @@ namespace tgvoip{
 			TCP_RELAY
 		};
 
-		Endpoint(int64_t id, uint16_t port, IPv4Address& address, IPv6Address& v6address, Type type, unsigned char* peerTag);
+		Endpoint(int64_t id, uint16_t port, const IPv4Address& address, const IPv6Address& v6address, Type type, unsigned char* peerTag);
 		Endpoint();
 		~Endpoint();
 		const NetworkAddress& GetAddress() const;
@@ -163,9 +171,9 @@ namespace tgvoip{
 	};
 
 	class AudioInputDevice : public AudioDevice{
-	
+
 	};
-	
+
 	class AudioInputTester{
 	public:
 		AudioInputTester(const std::string deviceID);
@@ -406,7 +414,7 @@ namespace tgvoip{
 		void SetPersistentState(std::vector<uint8_t> state);
 
 #if defined(TGVOIP_USE_CALLBACK_AUDIO_IO)
-		void SetAudioDataCallbacks(std::function<void(int16_t*, size_t)> input, std::function<void(int16_t*, size_t)> output);
+		void SetAudioDataCallbacks(std::function<void(int16_t*, size_t)> input, std::function<void(int16_t*, size_t)> output, std::function<void(int16_t*, size_t)> preprocessed);
 #endif
 
 		void SetVideoCodecSpecificData(const std::vector<Buffer>& data);
@@ -419,13 +427,14 @@ namespace tgvoip{
 			void (*upgradeToGroupCallRequested)(VoIPController*);
 		};
 		void SetCallbacks(Callbacks callbacks);
-		
+
 		float GetOutputLevel(){
 			return 0.0f;
 		};
+		int GetVideoResolutionForCurrentBitrate();
 		void SetVideoSource(video::VideoSource* source);
 		void SetVideoRenderer(video::VideoRenderer* renderer);
-		
+
 		void SetInputVolume(float level);
 		void SetOutputVolume(float level);
 #if defined(__APPLE__) && defined(TARGET_OS_OSX)
@@ -447,6 +456,8 @@ namespace tgvoip{
 			uint16_t id; // for group calls only
 			double sendTime;
 			double ackTime;
+			uint8_t type;
+			uint32_t size;
 		};
 		struct PendingOutgoingPacket{
 			PendingOutgoingPacket(uint32_t seq, unsigned char type, size_t len, Buffer&& data, int64_t endpoint){
@@ -540,6 +551,7 @@ namespace tgvoip{
 			std::shared_ptr<CallbackWrapper> callbackWrapper;
 			std::vector<Buffer> codecSpecificData;
 			bool csdIsValid=false;
+			int resolution;
 			unsigned int width=0;
 			unsigned int height=0;
 			uint16_t rotation=0;
@@ -578,6 +590,11 @@ namespace tgvoip{
 			uint32_t num;
 			uint32_t fragmentCount;
 			std::vector<uint32_t> unacknowledgedPackets;
+            uint32_t fragmentsInQueue;
+		};
+		struct PendingVideoFrameFragment{
+			uint32_t pts;
+			Buffer data;
 		};
 
 		void RunRecvThread();
@@ -615,6 +632,7 @@ namespace tgvoip{
 		std::string GetPacketTypeString(unsigned char type);
 		void SetupOutgoingVideoStream();
 		bool WasOutgoingPacketAcknowledged(uint32_t seq);
+		RecentOutgoingPacket* GetRecentOutgoingPacket(uint32_t seq);
 
 		int state;
 		std::map<int64_t, Endpoint> endpoints;
@@ -738,9 +756,9 @@ namespace tgvoip{
 		uint32_t initTimeoutID=MessageThread::INVALID_ID;
 		uint32_t noStreamsNopID=MessageThread::INVALID_ID;
 		uint32_t udpPingTimeoutID=MessageThread::INVALID_ID;
-		
-		effects::Volume outputVolume;
-		effects::Volume inputVolume;
+
+		std::unique_ptr<effects::Volume> outputVolume;
+		std::unique_ptr<effects::Volume> inputVolume;
 
 		std::vector<uint32_t> peerVideoDecoders;
         int peerMaxVideoResolution=0;
@@ -748,11 +766,14 @@ namespace tgvoip{
 #if defined(TGVOIP_USE_CALLBACK_AUDIO_IO)
 		std::function<void(int16_t*, size_t)> audioInputDataCallback;
 		std::function<void(int16_t*, size_t)> audioOutputDataCallback;
+		std::function<void(int16_t*, size_t)> audioPreprocDataCallback;
+		::OpusDecoder* preprocDecoder=nullptr;
+		int16_t preprocBuffer[4096];
 #endif
 #if defined(__APPLE__) && defined(TARGET_OS_OSX)
 		bool macAudioDuckingEnabled=true;
 #endif
-		
+
 		video::VideoSource* videoSource=NULL;
 		video::VideoRenderer* videoRenderer=NULL;
 		double firstVideoFrameTime=0.0;
@@ -761,6 +782,12 @@ namespace tgvoip{
 		std::vector<SentVideoFrame> sentVideoFrames;
 		Mutex sentVideoFramesMutex;
 		bool videoKeyframeRequested=false;
+		video::ScreamCongestionController videoCongestionControl;
+		std::vector<PendingVideoFrameFragment> videoPacingQueue;
+		uint32_t sendVideoPacketID=MessageThread::INVALID_ID;
+		uint32_t videoPacketLossCount=0;
+		uint32_t currentVideoBitrate=0;
+		double lastVideoResolutionChangeTime=0.0;
 
 		/*** debug report problems ***/
 		bool wasReconnecting=false;

@@ -25,11 +25,11 @@
 #endif  // WEBRTC_WIN
 
 #if defined(WEBRTC_POSIX)
-#ifdef BSD
-#include <stdlib.h>
-#else  // BSD
+#ifdef __linux__
 #include <alloca.h>
-#endif  // !BSD
+#else	// *BSD, Illumos, Darwin
+#include <stdlib.h>
+#endif
 #include <strings.h>
 #endif  // WEBRTC_POSIX
 

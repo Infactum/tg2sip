@@ -114,7 +114,7 @@ void AudioInputALSA::EnumerateDevices(std::vector<AudioInputDevice>& devs){
 	int (*_snd_device_name_free_hint)(void** hinst);
 	void* lib=dlopen("libasound.so.2", RTLD_LAZY);
 	if(!lib)
-		dlopen("libasound.so", RTLD_LAZY);
+		lib=dlopen("libasound.so", RTLD_LAZY);
 	if(!lib)
 		return;
 
@@ -170,6 +170,6 @@ void AudioInputALSA::EnumerateDevices(std::vector<AudioInputDevice>& devs){
 		free(ioid);
 		n++;
 	}
-
+        _snd_device_name_free_hint((void**)hints);
 	dlclose(lib);
 }

@@ -409,8 +409,19 @@ using common_type_t = typename std::common_type<T...>::type;
 template <typename T>
 using underlying_type_t = typename std::underlying_type<T>::type;
 
+#if __cplusplus > 201703L || (defined _MSC_VER && _MSVC_LANG > 201703L)
+template <typename T>
+struct result_of_helper;
+template <typename F, typename ...Args>
+struct result_of_helper<F(Args...)> {
+    using type = std::invoke_result_t<F, Args...>;
+};
+template <typename T>
+using result_of_t = typename result_of_helper<T>::type;
+#else   // C++20
 template <typename T>
 using result_of_t = typename std::result_of<T>::type;
+#endif  // C++20
 
 namespace type_traits_internal {
 template <typename Key, typename = size_t>
