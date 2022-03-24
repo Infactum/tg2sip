@@ -8,11 +8,12 @@
 #include <float.h>
 #include <stdint.h>
 
-#ifndef _WIN32
+#include "MessageThread.h"
+
+#ifndef TGVOIP_WIN32_THREADING
 #include <sys/time.h>
 #endif
 
-#include "MessageThread.h"
 #include "VoIPController.h"
 #include "logging.h"
 
@@ -22,7 +23,7 @@ MessageThread::MessageThread() : Thread(std::bind(&MessageThread::Run, this)){
 
 	SetName("MessageThread");
 
-#ifdef _WIN32
+#ifdef TGVOIP_WIN32_THREADING
 #if !defined(WINAPI_FAMILY) || WINAPI_FAMILY!=WINAPI_FAMILY_PHONE_APP
 	event=CreateEvent(NULL, false, false, NULL);
 #else
@@ -35,7 +36,7 @@ MessageThread::MessageThread() : Thread(std::bind(&MessageThread::Run, this)){
 
 MessageThread::~MessageThread(){
 	Stop();
-#ifdef _WIN32
+#ifdef TGVOIP_WIN32_THREADING
 	CloseHandle(event);
 #else
 	pthread_cond_destroy(&cond);
@@ -45,7 +46,7 @@ MessageThread::~MessageThread(){
 void MessageThread::Stop(){
 	if(running){
 		running=false;
-#ifdef _WIN32
+#ifdef TGVOIP_WIN32_THREADING
 		SetEvent(event);
 #else
 		pthread_cond_signal(&cond);
@@ -61,7 +62,7 @@ void MessageThread::Run(){
 		double waitTimeout=queue.empty() ? DBL_MAX : (queue[0].deliverAt-currentTime);
 		//LOGW("MessageThread wait timeout %f", waitTimeout);
 		if(waitTimeout>0.0){
-#ifdef _WIN32
+#ifdef TGVOIP_WIN32_THREADING
 			queueMutex.Unlock();
 			DWORD actualWaitTimeout=waitTimeout==DBL_MAX ? INFINITE : ((DWORD)round(waitTimeout*1000.0));
 #if !defined(WINAPI_FAMILY) || WINAPI_FAMILY!=WINAPI_FAMILY_PHONE_APP
@@ -130,7 +131,7 @@ uint32_t MessageThread::Post(std::function<void()> func, double delay, double in
 	Message m{lastMessageID++, delay==0.0 ? 0.0 : (currentTime+delay), interval, func};
 	InsertMessageInternal(m);
 	if(!IsCurrent()){
-#ifdef _WIN32
+#ifdef TGVOIP_WIN32_THREADING
 		SetEvent(event);
 #else
 		pthread_cond_signal(&cond);

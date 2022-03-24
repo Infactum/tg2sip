@@ -295,7 +295,7 @@ void NetworkSocketPosix::Open(){
 void NetworkSocketPosix::Close(){
 	closing=true;
 	failed=true;
-	
+
     if (fd>=0) {
         shutdown(fd, SHUT_RDWR);
         close(fd);

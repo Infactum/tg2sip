@@ -5,15 +5,16 @@
 //
 
 #include "OpusDecoder.h"
+#include "EchoCanceller.h"
 #include "audio/Resampler.h"
 #include "logging.h"
 #include <assert.h>
 #include <math.h>
 #include <algorithm>
-#ifdef HAVE_CONFIG_H
+#if TGVOIP_INCLUDE_OPUS_PACKAGE
 #include <opus/opus.h>
 #else
-#include "opus.h"
+#include <opus.h>
 #endif
 
 #include "VoIPController.h"

@@ -4,7 +4,8 @@ CFLAGS = -Wall -DHAVE_CONFIG_H -Wno-unknown-pragmas
 
 lib_LTLIBRARIES = libtgvoip.la
 
-SRC = VoIPController.cpp \
+SRC = TgVoip.cpp \
+VoIPController.cpp \
 Buffers.cpp \
 CongestionControl.cpp \
 EchoCanceller.cpp \
@@ -25,9 +26,11 @@ audio/Resampler.cpp \
 os/posix/NetworkSocketPosix.cpp \
 video/VideoSource.cpp \
 video/VideoRenderer.cpp \
+video/ScreamCongestionController.cpp \
 json11.cpp
 
 TGVOIP_HDRS = \
+TgVoip.h \
 VoIPController.h \
 Buffers.h \
 BlockingQueue.h \
@@ -51,6 +54,7 @@ audio/Resampler.h \
 os/posix/NetworkSocketPosix.h \
 video/VideoSource.h \
 video/VideoRenderer.h \
+video/ScreamCongestionController.h \
 json11.hpp \
 utils.h
 
@@ -62,7 +66,11 @@ os/darwin/AudioOutputAudioUnit.cpp \
 os/darwin/AudioUnitIO.cpp \
 os/darwin/AudioInputAudioUnitOSX.cpp \
 os/darwin/AudioOutputAudioUnitOSX.cpp \
-os/darwin/DarwinSpecific.mm
+os/darwin/DarwinSpecific.mm \
+os/darwin/SampleBufferDisplayLayerRenderer.mm \
+os/darwin/TGVVideoRenderer.mm \
+os/darwin/TGVVideoSource.mm \
+os/darwin/VideoToolboxEncoderSource.mm
 
 TGVOIP_HDRS += \
 os/darwin/AudioInputAudioUnit.h \
@@ -70,12 +78,17 @@ os/darwin/AudioOutputAudioUnit.h \
 os/darwin/AudioUnitIO.h \
 os/darwin/AudioInputAudioUnitOSX.h \
 os/darwin/AudioOutputAudioUnitOSX.h \
-os/darwin/DarwinSpecific.h
+os/darwin/DarwinSpecific.h \
+os/darwin/SampleBufferDisplayLayerRenderer.h \
+os/darwin/TGVVideoRenderer.h \
+os/darwin/TGVVideoSource.h \
+os/darwin/VideoToolboxEncoderSource.h
 
-LDFLAGS += -framework Foundation -framework CoreFoundation -framework CoreAudio -framework AudioToolbox
+LDFLAGS += -framework Foundation -framework CoreFoundation -framework CoreAudio -framework AudioToolbox -framework VideoToolbox -framework CoreMedia -framework CoreVideo
 
 else
 # Linux-specific
+
 if WITH_ALSA
 SRC += \
 os/linux/AudioInputALSA.cpp \
@@ -373,7 +386,7 @@ SRC += \
 webrtc_dsp/rtc_base/logging_mac.mm \
 webrtc_dsp/rtc_base/logging_mac.h
 else
-CFLAGS += -DWEBRTC_LINUX
+CFLAGS += $(if $(filter linux%,@host_os@),-DWEBRTC_LINUX)
 endif
 
 if TARGET_CPU_X86
@@ -738,8 +751,26 @@ else
 CFLAGS += -DTGVOIP_NO_DSP
 endif
 
+libtgvoip_la_CFLAGS = $(CRYPTO_CFLAGS) $(OPUS_CFLAGS)
+
+if WITH_ALSA
+libtgvoip_la_CFLAGS += $(ALSA_CFLAGS)
+endif
+
+if WITH_PULSE
+libtgvoip_la_CFLAGS += $(PULSE_CFLAGS)
+endif
+
+libtgvoip_la_CXXFLAGS = $(libtgvoip_la_CFLAGS)
+libtgvoip_la_LDFLAGS = -version-number @LIBTGVOIP_MAJOR_VERSION@:@LIBTGVOIP_MINOR_VERSION@:@LIBTGVOIP_PATCH_VERSION@ $(CRYPTO_LIBS) $(OPUS_LIBS)
 libtgvoip_la_SOURCES = $(SRC) $(TGVOIP_HDRS)
 tgvoipincludedir = $(includedir)/tgvoip
 nobase_tgvoipinclude_HEADERS = $(TGVOIP_HDRS)
 
-CXXFLAGS += -std=gnu++0x $(CFLAGS)
+pkgconfig_DATA = tgvoip.pc
+
+CXXFLAGS += -std=gnu++17 $(CFLAGS)
+if TARGET_OS_OSX
+OBJCFLAGS = $(CFLAGS)
+OBJCXXFLAGS += -std=gnu++0x $(CFLAGS)
+endif

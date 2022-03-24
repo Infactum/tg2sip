@@ -80,7 +80,7 @@ void EchoAudibility::UpdateRenderNoiseEstimator(
     non_zero_render_seen_ = !IsRenderTooLow(block_buffer);
   }
   if (non_zero_render_seen_) {
-    for (int idx = render_spectrum_write_prev_.value();
+    for (int idx = *render_spectrum_write_prev_;
          idx != render_spectrum_write_current;
          idx = spectrum_buffer.DecIndex(idx)) {
       render_stationarity_.UpdateNoiseEstimator(spectrum_buffer.buffer[idx]);

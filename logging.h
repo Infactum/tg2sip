@@ -41,7 +41,7 @@ void tgvoip_log_file_write_header(FILE* file);
 #define LOGW(msg, ...) {__tgvoip_call_tglog("W/tgvoip: " msg, ##__VA_ARGS__); tgvoip_log_file_printf('W', msg, ##__VA_ARGS__);}
 #define LOGE(msg, ...) {__tgvoip_call_tglog("E/tgvoip: " msg, ##__VA_ARGS__); tgvoip_log_file_printf('E', msg, ##__VA_ARGS__);}
 
-#elif defined(_WIN32) && defined(_DEBUG)
+#elif defined(_WIN32) && !defined(__MINGW32__) && defined(_DEBUG)
 
 #include <windows.h>
 #include <stdio.h>

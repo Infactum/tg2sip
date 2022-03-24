@@ -54,8 +54,6 @@ const uint32_t kFmtSubchunkSize = sizeof(FmtSubchunk) - sizeof(ChunkHeader);
 // Simple wav header. It does not include chunks that are not essential to read
 // audio samples.
 struct WavHeader {
-  WavHeader(const WavHeader&) = default;
-  WavHeader& operator=(const WavHeader&) = default;
   RiffHeader riff;
   FmtSubchunk fmt;
   struct {

@@ -29,7 +29,7 @@
 #include "../os/windows/AudioOutputWave.h"
 #endif
 #include "../os/windows/AudioOutputWASAPI.h"
-#elif defined(__linux__) || defined(__FreeBSD_kernel__) || defined(__gnu_hurd__)
+#elif defined(__linux__) || defined(__FreeBSD__) || defined(__gnu_hurd__)
 #ifndef WITHOUT_ALSA
 #include "../os/linux/AudioOutputALSA.h"
 #endif
@@ -83,14 +83,14 @@ void AudioOutput::EnumerateDevices(std::vector<AudioOutputDevice>& devs){
 	}
 #endif
 	AudioOutputWASAPI::EnumerateDevices(devs);
-#elif defined(__linux__) && !defined(__ANDROID__)
+#elif (defined(__linux__) && !defined(__ANDROID__)) || defined(__FreeBSD__)
 #if !defined(WITHOUT_PULSE) && !defined(WITHOUT_ALSA)
 	if(!AudioOutputPulse::EnumerateDevices(devs))
 		AudioOutputALSA::EnumerateDevices(devs);
 #elif defined(WITHOUT_PULSE)
 	AudioOutputALSA::EnumerateDevices(devs);
 #else
-	AudioOutputPulse::EnumerateDevices(devs)
+	AudioOutputPulse::EnumerateDevices(devs);
 #endif
 #endif
 }
@@ -101,7 +101,7 @@ std::string AudioOutput::GetCurrentDevice(){
 }
 
 void AudioOutput::SetCurrentDevice(std::string deviceID){
-	
+
 }
 
 bool AudioOutput::IsInitialized(){

@@ -12,9 +12,9 @@
 #include "threading.h"
 #include "utils.h"
 
-using namespace std;
-
 namespace tgvoip{
+
+using namespace std;
 
 template<typename T>
 class BlockingQueue{
