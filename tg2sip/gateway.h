@@ -193,7 +193,7 @@ namespace state_machine::actions {
 namespace state_machine {
     class Logger {
     public:
-        Logger(std::string context_id, shared_ptr<spdlog::logger> logger);
+        Logger(std::string context_id, std::shared_ptr<spdlog::logger> logger);
 
         virtual ~Logger();
 
