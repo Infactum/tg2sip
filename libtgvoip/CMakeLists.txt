@@ -26,6 +26,8 @@ add_library(libtgvoip STATIC
         OpusEncoder.cpp
         OpusEncoder.h
         threading.h
+        TgVoip.cpp
+        TgVoip.h
         VoIPController.cpp
         VoIPGroupController.cpp
         VoIPController.h
@@ -46,6 +48,8 @@ add_library(libtgvoip STATIC
         MessageThread.h
         audio/AudioIO.cpp
         audio/AudioIO.h
+        video/ScreamCongestionController.cpp
+        video/ScreamCongestionController.h
         video/VideoSource.cpp
         video/VideoSource.h
         video/VideoRenderer.cpp
@@ -648,7 +652,8 @@ add_library(libtgvoip STATIC
         audio/SoftwareAudioOutput.h
         audio/SoftwareAudioOutput.cpp)
 
-set_property(TARGET libtgvoip PROPERTY CXX_STANDARD 11)
+# FIXME: last libtgvoip looks adapted to C++20
+set_property(TARGET libtgvoip PROPERTY CXX_STANDARD 14)
 
 target_include_directories(libtgvoip PRIVATE
         webrtc_dsp
@@ -666,8 +671,10 @@ target_compile_definitions(libtgvoip PRIVATE
 
 target_compile_definitions(libtgvoip PUBLIC
         # Chose one of NO_DSP / DESKTOP_DSP
-        # TGVOIP_NO_DSP
-        TGVOIP_USE_DESKTOP_DSP
+        # FIXME: desktop DSP cannot be used since last libtgvoip update
+        #  since libtgvoip codebase is tighten to external webrtc
+        TGVOIP_NO_DSP
+        # TGVOIP_USE_DESKTOP_DSP
         TGVOIP_USE_SOFTWARE_AUDIO)
 
 if (${spdlog_FOUND})

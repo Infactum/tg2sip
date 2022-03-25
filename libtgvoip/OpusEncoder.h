@@ -12,7 +12,6 @@
 #include "threading.h"
 #include "BlockingQueue.h"
 #include "Buffers.h"
-#include "EchoCanceller.h"
 #include "utils.h"
 
 #include <stdint.h>
@@ -20,6 +19,13 @@
 struct OpusEncoder;
 
 namespace tgvoip{
+
+class EchoCanceller;
+
+namespace effects {
+class AudioEffect;
+} // namespace effects
+
 class OpusEncoder{
 public:
 	TGVOIP_DISALLOW_COPY_AND_ASSIGN(OpusEncoder);
@@ -63,15 +69,16 @@ private:
 	bool running;
 	uint32_t frameDuration;
 	int packetLossPercent;
-	uint32_t mediumCorrectionBitrate;
-	uint32_t strongCorrectionBitrate;
-	double mediumCorrectionMultiplier;
-	double strongCorrectionMultiplier;
 	AudioLevelMeter* levelMeter;
 	bool secondaryEncoderEnabled;
 	bool vadMode=false;
 	uint32_t vadNoVoiceBitrate;
 	std::vector<effects::AudioEffect*> postProcEffects;
+	int secondaryEnabledBandwidth;
+	int vadModeVoiceBandwidth;
+	int vadModeNoVoiceBandwidth;
+
+	bool wasSecondaryEncoderEnabled=false;
 
 	void (*callback)(unsigned char*, size_t, unsigned char*, size_t, void*);
 	void* callbackParam;

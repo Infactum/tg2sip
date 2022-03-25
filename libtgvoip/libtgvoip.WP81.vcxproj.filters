@@ -300,6 +300,9 @@
     <ClInclude Include="os\windows\AudioOutputWASAPI.h">
       <Filter>windows</Filter>
     </ClInclude>
+    <ClInclude Include="os\windows\MinGWSupport.h">
+      <Filter>windows</Filter>
+    </ClInclude>
     <ClInclude Include="os\windows\NetworkSocketWinsock.h">
       <Filter>windows</Filter>
     </ClInclude>

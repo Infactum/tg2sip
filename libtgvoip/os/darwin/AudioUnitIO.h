@@ -29,7 +29,7 @@ class AudioOutputAudioUnit;
 		void SetCurrentDevice(bool input, std::string deviceID);
 		void SetDuckingEnabled(bool enabled);
 #endif
-	
+
 	private:
 		static OSStatus BufferCallback(void *inRefCon, AudioUnitRenderActionFlags *ioActionFlags, const AudioTimeStamp *inTimeStamp, UInt32 inBusNumber, UInt32 inNumberFrames, AudioBufferList *ioData);
 		void BufferCallback(AudioUnitRenderActionFlags *ioActionFlags, const AudioTimeStamp *inTimeStamp, UInt32 bus, UInt32 numFrames, AudioBufferList* ioData);
@@ -39,7 +39,9 @@ class AudioOutputAudioUnit;
 		std::string currentInputDevice;
 		std::string currentOutputDevice;
 		bool duckingEnabled=true;
+#ifndef TGVOIP_NO_OSX_PRIVATE_API
 		bool actualDuckingEnabled=true;
+#endif // TGVOIP_NO_OSX_PRIVATE_API
 		AudioDeviceID currentOutputDeviceID;
 #endif
 		AudioComponentInstance unit;

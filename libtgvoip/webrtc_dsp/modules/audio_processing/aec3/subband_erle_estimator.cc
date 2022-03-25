@@ -116,14 +116,14 @@ void SubbandErleEstimator::UpdateBands(rtc::ArrayView<const float> X2,
           if (coming_onset_[k]) {
             coming_onset_[k] = false;
             erle_onsets_[k] = erle_band_update(
-                erle_onsets_[k], new_erle.value(), low_render_energy, 0.15f,
+                erle_onsets_[k], *new_erle, low_render_energy, 0.15f,
                 0.3f, min_erle_, max_erle);
           }
           hold_counters_[k] = kBlocksForOnsetDetection;
         }
 
         erle_[k] =
-            erle_band_update(erle_[k], new_erle.value(), low_render_energy,
+            erle_band_update(erle_[k], *new_erle, low_render_energy,
                              0.05f, 0.1f, min_erle_, max_erle);
       }
     }

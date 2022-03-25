@@ -18,6 +18,9 @@
 #ifdef __APPLE__
 #include "os/darwin/DarwinSpecific.h"
 #endif
+#ifdef __FreeBSD__
+#include <pthread_np.h>
+#endif
 
 namespace tgvoip{
 	class Mutex{
@@ -92,9 +95,9 @@ namespace tgvoip{
 		static void* ActualEntryPoint(void* arg){
 			Thread* self=reinterpret_cast<Thread*>(arg);
 			if(self->name){
-#if !defined(__APPLE__) && !defined(__gnu_hurd__)
+#if defined(__linux__) || defined(__FreeBSD__)
 				pthread_setname_np(self->thread, self->name);
-#elif !defined(__gnu_hurd__)
+#elif defined(__APPLE__)
 				pthread_setname_np(self->name);
 				if(self->maxPriority){
 					DarwinSpecific::SetCurrentThreadPriority(DarwinSpecific::THREAD_PRIO_USER_INTERACTIVE);
@@ -107,7 +110,9 @@ namespace tgvoip{
 		std::function<void()> entry;
 		pthread_t thread;
 		const char* name;
+#ifdef __APPLE__
 		bool maxPriority=false;
+#endif
 		bool valid=false;
 	};
 }
@@ -120,31 +125,31 @@ public:
 	Semaphore(unsigned int maxCount, unsigned int initValue){
 		sem = dispatch_semaphore_create(initValue);
 	}
-	
+
 	~Semaphore(){
 #if ! __has_feature(objc_arc)
         dispatch_release(sem);
 #endif
 	}
-	
+
 	void Acquire(){
 		dispatch_semaphore_wait(sem, DISPATCH_TIME_FOREVER);
 	}
-	
+
 	void Release(){
 		dispatch_semaphore_signal(sem);
 	}
-	
+
 	void Acquire(int count){
 		for(int i=0;i<count;i++)
 			Acquire();
 	}
-	
+
 	void Release(int count){
 		for(int i=0;i<count;i++)
 			Release();
 	}
-	
+
 private:
 	dispatch_semaphore_t sem;
 };
@@ -186,6 +191,7 @@ private:
 #endif
 
 #elif defined(_WIN32)
+#define TGVOIP_WIN32_THREADING
 
 #include <Windows.h>
 #include <assert.h>
@@ -350,5 +356,5 @@ private:
 	Mutex &mutex;
 };
 }
-	
+
 #endif //__THREADING_H

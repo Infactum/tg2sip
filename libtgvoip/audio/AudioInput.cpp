@@ -27,7 +27,7 @@
 #include "../os/windows/AudioInputWave.h"
 #endif
 #include "../os/windows/AudioInputWASAPI.h"
-#elif defined(__linux__) || defined(__FreeBSD_kernel__) || defined(__gnu_hurd__)
+#elif defined(__linux__) || defined(__FreeBSD__) || defined(__gnu_hurd__)
 #ifndef WITHOUT_ALSA
 #include "../os/linux/AudioInputALSA.h"
 #endif
@@ -75,14 +75,14 @@ void AudioInput::EnumerateDevices(std::vector<AudioInputDevice>& devs){
 	}
 #endif
 	AudioInputWASAPI::EnumerateDevices(devs);
-#elif defined(__linux__) && !defined(__ANDROID__)
+#elif (defined(__linux__) && !defined(__ANDROID__)) || defined(__FreeBSD__)
 #if !defined(WITHOUT_PULSE) && !defined(WITHOUT_ALSA)
 	if(!AudioInputPulse::EnumerateDevices(devs))
 		AudioInputALSA::EnumerateDevices(devs);
 #elif defined(WITHOUT_PULSE)
 	AudioInputALSA::EnumerateDevices(devs);
 #else
-	AudioInputPulse::EnumerateDevices(devs)
+	AudioInputPulse::EnumerateDevices(devs);
 #endif
 #endif
 #endif
@@ -93,7 +93,7 @@ std::string AudioInput::GetCurrentDevice(){
 }
 
 void AudioInput::SetCurrentDevice(std::string deviceID){
-	
+
 }
 
 int32_t AudioInput::GetEstimatedDelay(){

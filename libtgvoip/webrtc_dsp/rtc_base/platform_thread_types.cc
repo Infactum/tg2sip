@@ -31,7 +31,7 @@ PlatformThreadId CurrentThreadId() {
   return syscall(__NR_gettid);
 #else
   // Default implementation for nacl and solaris.
-  return reinterpret_cast<pid_t>(pthread_self());
+  return static_cast<pid_t>(pthread_self());
 #endif
 #endif  // defined(WEBRTC_POSIX)
 }

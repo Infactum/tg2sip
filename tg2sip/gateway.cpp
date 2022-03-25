@@ -26,11 +26,11 @@ namespace td_api = td::td_api;
 volatile sig_atomic_t e_flag = 0;
 
 namespace {
-    vector<string> voip_library_versions() {
+    std::vector<string> voip_library_versions() {
         // actually we want to provide real tgvoip version from
         // tgvoip::VoIPController::GetVersion()
         // but telegram servers accepts only this one
-        return vector<string>{"2.4.4"};
+        return std::vector<string>{"2.4.4"};
     }
 }
 
@@ -593,8 +593,8 @@ namespace state_machine::actions {
 
 namespace state_machine {
 
-    Logger::Logger(std::string context_id, shared_ptr<spdlog::logger> logger) : logger_(std::move(logger)),
-                                                                                context_id_(std::move(context_id)) {
+    Logger::Logger(std::string context_id, std::shared_ptr<spdlog::logger> logger) : logger_(std::move(logger)),
+                                                                                     context_id_(std::move(context_id)) {
         TRACE(logger_, "[{}] logger created", context_id_);
     }
 

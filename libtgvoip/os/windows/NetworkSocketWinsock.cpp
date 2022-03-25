@@ -53,7 +53,7 @@ NetworkSocketWinsock::~NetworkSocketWinsock(){
 }
 
 void NetworkSocketWinsock::SetMaxPriority(){
-	
+
 }
 
 void NetworkSocketWinsock::Send(NetworkPacket *packet){
@@ -73,7 +73,7 @@ void NetworkSocketWinsock::Send(NetworkPacket *packet){
 					addrinfo *addr0;
 					int res=getaddrinfo("ipv4only.arpa", NULL, NULL, &addr0);
 					if(res!=0){
-						LOGW("Error updating NAT64 prefix: %d / %s", res, gai_strerror(res));
+						LOGW("Error updating NAT64 prefix: %d / %s", res, gai_strerrorA(res));
 					}else{
 						addrinfo *addrPtr;
 						unsigned char *addr170=NULL;
@@ -88,14 +88,14 @@ void NetworkSocketWinsock::Send(NetworkPacket *packet){
 								if(v4part==0xAB0000C0 && !addr171){
 									addr171=translatedAddr->sin6_addr.s6_addr;
 								}
-								char buf[INET6_ADDRSTRLEN];
+								//char buf[INET6_ADDRSTRLEN];
 								//LOGV("Got translated address: %s", inet_ntop(AF_INET6, &translatedAddr->sin6_addr, buf, sizeof(buf)));
 							}
 						}
 						if(addr170 && addr171 && memcmp(addr170, addr171, 12)==0){
 							nat64Present=true;
 							memcpy(nat64Prefix, addr170, 12);
-							char buf[INET6_ADDRSTRLEN];
+							//char buf[INET6_ADDRSTRLEN];
 							//LOGV("Found nat64 prefix from %s", inet_ntop(AF_INET6, addr170, buf, sizeof(buf)));
 						}else{
 							LOGV("Didn't find nat64");
@@ -136,7 +136,7 @@ void NetworkSocketWinsock::Send(NetworkPacket *packet){
 				LOGE("Got EAGAIN but there's already a pending packet");
 				failed=true;
 			}else{
-				LOGV("Socket %d not ready to send", fd);
+				LOGV("Socket %lld not ready to send", (long long)fd);
 				pendingOutgoingPacket=new Buffer(packet->length);
 				pendingOutgoingPacket->CopyFrom(packet->data, 0, packet->length);
 				readyToSend=false;
@@ -153,7 +153,7 @@ void NetworkSocketWinsock::Send(NetworkPacket *packet){
 			LOGE("send returned less than packet length but there's already a pending packet");
 			failed=true;
 		}else{
-			LOGV("Socket %d not ready to send", fd);
+			LOGV("Socket %lld not ready to send", (long long)fd);
 			pendingOutgoingPacket=new Buffer(packet->length-res);
 			pendingOutgoingPacket->CopyFrom(packet->data+res, 0, packet->length-res);
 			readyToSend=false;
@@ -243,7 +243,7 @@ void NetworkSocketWinsock::Open(){
 			failed=true;
 			return;
 		}
-		
+
 		int res;
 		if(isAtLeastVista){
 			DWORD flag=0;
@@ -273,7 +273,6 @@ void NetworkSocketWinsock::Open(){
 			addr=(sockaddr*)&addr6;
 			addrLen=sizeof(addr6);
 		}else{
-			sockaddr_in addr4;
 			addr4.sin_addr.s_addr=0;
 			addr4.sin_family=AF_INET;
 			addr=(sockaddr*)&addr4;
@@ -362,7 +361,7 @@ std::string NetworkSocketWinsock::GetLocalInterfaceInfo(IPv4Address *v4addr, IPv
 	IP_ADAPTER_ADDRESSES* addrs=(IP_ADAPTER_ADDRESSES*)malloc(15*1024);
 	ULONG size=15*1024;
 	ULONG flags=GAA_FLAG_SKIP_ANYCAST | GAA_FLAG_SKIP_MULTICAST | GAA_FLAG_SKIP_DNS_SERVER | GAA_FLAG_SKIP_FRIENDLY_NAME;
-	
+
 	ULONG res=GetAdaptersAddresses(AF_UNSPEC, flags, NULL, addrs, &size);
 	if(res==ERROR_BUFFER_OVERFLOW){
 		addrs=(IP_ADAPTER_ADDRESSES*)realloc(addrs, size);
@@ -565,7 +564,7 @@ IPv4Address *NetworkSocketWinsock::ResolveDomainName(std::string name){
 	IPv4Address* ret=NULL;
 	int res=getaddrinfo(name.c_str(), NULL, NULL, &addr0);
 	if(res!=0){
-		LOGW("Error updating NAT64 prefix: %d / %s", res, gai_strerror(res));
+		LOGW("Error updating NAT64 prefix: %d / %s", res, gai_strerrorA(res));
 	}else{
 		addrinfo* addrPtr;
 		for(addrPtr=addr0;addrPtr;addrPtr=addrPtr->ai_next){
@@ -694,7 +693,7 @@ bool NetworkSocketWinsock::Select(std::vector<NetworkSocket*> &readFds, std::vec
 	}
 	//LOGV("select fds left: read=%d, error=%d", readFds.size(), errorFds.size());
 
-	return readFds.size()>0 || errorFds.size()>0;
+	return readFds.size()>0 || errorFds.size()>0 || writeFds.size()>0;
 }
 
 SocketSelectCancellerWin32::SocketSelectCancellerWin32(){

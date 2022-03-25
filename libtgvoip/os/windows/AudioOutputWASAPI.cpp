@@ -151,7 +151,7 @@ void AudioOutputWASAPI::EnumerateDevices(std::vector<tgvoip::AudioOutputDevice>&
 		res=device->OpenPropertyStore(STGM_READ, &propStore);
 		SafeRelease(&device);
 		SCHECK_RES(res, "OpenPropertyStore");
-		
+
 		PROPVARIANT friendlyName;
 		PropVariantInit(&friendlyName);
 		res=propStore->GetValue(PKEY_Device_FriendlyName, &friendlyName);
@@ -214,13 +214,13 @@ void AudioOutputWASAPI::ActuallySetCurrentDevice(std::string deviceID){
 	SafeRelease(&device);
 
 
-	IMMDeviceCollection *deviceCollection = NULL;
-
 	if(deviceID=="default"){
 		isDefaultDevice=true;
 		res=enumerator->GetDefaultAudioEndpoint(eRender, eCommunications, &device);
 		CHECK_RES(res, "GetDefaultAudioEndpoint");
 	}else{
+		IMMDeviceCollection *deviceCollection = NULL;
+
 		isDefaultDevice=false;
 		res=enumerator->EnumAudioEndpoints(eRender, DEVICE_STATE_ACTIVE, &deviceCollection);
 		CHECK_RES(res, "EnumAudioEndpoints");
@@ -246,29 +246,45 @@ void AudioOutputWASAPI::ActuallySetCurrentDevice(std::string deviceID){
 				break;
 			}
 		}
+		if(deviceCollection)
+			SafeRelease(&deviceCollection);
+		if (!device) {
+			LOGW("Requested device not found, using default");
+			ActuallySetCurrentDevice("default");
+			return;
+		}
 	}
-
-	if(deviceCollection)
-		SafeRelease(&deviceCollection);
 
 	if(!device){
 		LOGE("Didn't find playback device; failing");
 		failed=true;
 		return;
 	}
-	
+
 	res=device->Activate(__uuidof(IAudioClient), CLSCTX_INPROC_SERVER, NULL, (void**)&audioClient);
 	CHECK_RES(res, "device->Activate");
 #else
-	Platform::String^ defaultDevID=Windows::Media::Devices::MediaDevice::GetDefaultAudioRenderId(Windows::Media::Devices::AudioDeviceRole::Communications);
-	if(defaultDevID==nullptr){
-		LOGE("Didn't find playback device; failing");
-		failed=true;
-		return;
+	std::wstring devID;
+
+	if (deviceID=="default"){
+		Platform::String^ defaultDevID=Windows::Media::Devices::MediaDevice::GetDefaultAudioRenderId(Windows::Media::Devices::AudioDeviceRole::Communications);
+		if(defaultDevID==nullptr){
+			LOGE("Didn't find playback device; failing");
+			failed=true;
+			return;
+		}else{
+			isDefaultDevice=true;
+			devID=defaultDevID->Data();
+		}
+	}else{
+		int wchars_num=MultiByteToWideChar(CP_UTF8, 0, deviceID.c_str(), -1, NULL, 0);
+		wchar_t* wstr=new wchar_t[wchars_num];
+		MultiByteToWideChar(CP_UTF8, 0, deviceID.c_str(), -1, wstr, wchars_num);
+		devID=wstr;
 	}
 
 	HRESULT res1, res2;
-	IAudioClient2* audioClient2=WindowsSandboxUtils::ActivateAudioDevice(defaultDevID->Data(), &res1, &res2);
+	IAudioClient2* audioClient2=WindowsSandboxUtils::ActivateAudioDevice(devID.c_str(), &res1, &res2);
 	CHECK_RES(res1, "activate1");
 	CHECK_RES(res2, "activate2");
 
@@ -371,7 +387,7 @@ void AudioOutputWASAPI::RunThread() {
 			//double t=VoIPController::GetCurrentTime();
 			//LOGV("framesAvail: %u, time: %f, isPlaying: %d", framesAvailable, t-prevCallback, isPlaying);
 			//prevCallback=t;
-			
+
 			size_t bytesAvailable=framesAvailable*2;
 			while(bytesAvailable>remainingDataLen){
 				if(isPlaying){
